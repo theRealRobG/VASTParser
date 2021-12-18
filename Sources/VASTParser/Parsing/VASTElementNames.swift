@@ -74,9 +74,56 @@ extension String {
 
 import Foundation
 
+class ParsingErrorLog {
+    private var log = [VASTParsingError]()
+
+    var items: [VASTParsingError] { log }
+
+    func append(_ error: VASTParsingError) {
+        log.append(error)
+    }
+}
+
+enum VASTParsingError: CustomNSError {
+    case unexpectedStartOfElement(parentElementName: String, unexpectedElementName: String)
+    case unexpectedEndOfElement(parentElementName: String, unexpectedElementName: String)
+    case missingRequiredProperty(parentElementName: String, missingPropertyName: String)
+
+    static var errorDomain: String { "VASTParsingErrorDomain" }
+
+    var errorCode: Int {
+        switch self {
+        case .unexpectedStartOfElement: return 100
+        case .unexpectedEndOfElement: return 101
+        case .missingRequiredProperty: return 102
+        }
+    }
+
+    var errorUserInfo: [String: Any] {
+        var userInfo = [String: Any]()
+        switch self {
+        case .unexpectedStartOfElement(let parentElementName, let unexpectedElementName):
+            let m = "Unexpected start of element \(unexpectedElementName) found while parsing \(parentElementName)"
+            userInfo[NSLocalizedDescriptionKey] = m
+        case .unexpectedEndOfElement(let parentElementName, let unexpectedElementName):
+            let m = "Unexpected end of element \(unexpectedElementName) found while parsing \(parentElementName)"
+            userInfo[NSLocalizedDescriptionKey] = m
+        case .missingRequiredProperty(let parentElementName, let missingPropertyName):
+            let m = "Missing required \(missingPropertyName) while persing \(parentElementName)"
+            userInfo[NSLocalizedDescriptionKey] = m
+        }
+        return userInfo
+    }
+}
+
+protocol ErrorLog {
+    var errorLog: [VASTParsingError] { get set }
+}
+
 class AnyParsingContext: NSObject, XMLParserDelegate {
     let elementName: String
     let attributes: [String: String]
+    var errorLog: ParsingErrorLog
     var delegate: Any?
     weak var parentContext: XMLParserDelegate?
 
@@ -84,11 +131,13 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
         xmlParser: XMLParser,
         elementName: String,
         attributes: [String: String],
+        errorLog: ParsingErrorLog,
         delegate: Any,
         parentContext: XMLParserDelegate?
     ) {
         self.elementName = elementName
         self.attributes = attributes
+        self.errorLog = errorLog
         self.delegate = delegate
         self.parentContext = parentContext
         super.init()
@@ -105,7 +154,12 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
         namespaceURI: String?,
         qualifiedName qName: String?
     ) {
-        guard elementName == self.elementName else { return }
+        guard elementName == self.elementName else {
+            errorLog.append(
+                .unexpectedEndOfElement(parentElementName: self.elementName, unexpectedElementName: elementName)
+            )
+            return
+        }
         didCompleteParsing()
         unlink(parser)
     }
@@ -139,6 +193,7 @@ class StringContentParsingContext: AnyParsingContext {
         xmlParser: XMLParser,
         elementName: String,
         attributes: [String: String],
+        errorLog: ParsingErrorLog,
         delegate: StringContentParsingContextDelegate,
         parentContext: XMLParserDelegate?
     ) {
@@ -146,6 +201,7 @@ class StringContentParsingContext: AnyParsingContext {
             xmlParser: xmlParser,
             elementName: elementName,
             attributes: attributes,
+            errorLog: errorLog,
             delegate: delegate,
             parentContext: parentContext
         )
@@ -179,6 +235,7 @@ class ImpressionParsingContext: AnyParsingContext {
         xmlParser: XMLParser,
         elementName: String,
         attributes: [String: String],
+        errorLog: ParsingErrorLog,
         delegate: ImpressionParsingContextDelegate,
         parentContext: XMLParserDelegate?
     ) {
@@ -186,13 +243,21 @@ class ImpressionParsingContext: AnyParsingContext {
             xmlParser: xmlParser,
             elementName: elementName,
             attributes: attributes,
+            errorLog: errorLog,
             delegate: delegate,
             parentContext: parentContext
         )
     }
 
     override func didCompleteParsing() {
-        guard let id = attributes["id"], let url = self.url else { return }
+        guard let id = attributes["id"] else {
+            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "id"))
+            return
+        }
+        guard let url = self.url else {
+            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "content"))
+            return
+        }
         localDelegate?.impressionParsingContext(
             self,
             didParse: VAST.Element.Impression(id: id, content: url),
@@ -219,6 +284,7 @@ class InlineParsingContext: AnyParsingContext {
     var adSystem: VAST.Element.AdSystem?
     var adTitle: VAST.Element.AdTitle?
     var error: VAST.Element.Error?
+    var adServingId: VAST.Element.AdServingId?
     var impressions = [VAST.Element.Impression]()
 
     var localDelegate: InlineParsingContextDelegate? { super.delegate as? InlineParsingContextDelegate }
@@ -230,6 +296,7 @@ class InlineParsingContext: AnyParsingContext {
         xmlParser: XMLParser,
         elementName: String,
         attributes: [String: String],
+        errorLog: ParsingErrorLog,
         delegate: InlineParsingContextDelegate,
         parentContext: XMLParserDelegate?
     ) {
@@ -237,20 +304,36 @@ class InlineParsingContext: AnyParsingContext {
             xmlParser: xmlParser,
             elementName: elementName,
             attributes: attributes,
+            errorLog: errorLog,
             delegate: delegate,
             parentContext: parentContext
         )
     }
 
     override func didCompleteParsing() {
-        guard let adSystem = self.adSystem, let adTitle = self.adTitle, let error = self.error else { return }
+        guard let adSystem = self.adSystem else {
+            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "adSystem"))
+            return
+        }
+        guard let adTitle = self.adTitle else {
+            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "adTitle"))
+            return
+        }
+        guard let adServingId = self.adServingId else {
+            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "adServingId"))
+            return
+        }
+        guard let error = self.error else {
+            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "error"))
+            return
+        }
         localDelegate?.inlineParsingContext(
             self,
             didParse: VAST.Element.InLine(
                 adSystem: adSystem,
                 adTitle: adTitle,
                 impression: impressions,
-                adServingId: VAST.Element.AdServingId(content: ""),
+                adServingId: adServingId,
                 creatives: VAST.Element.Creatives(creative: []),
                 category: nil,
                 description: nil,
@@ -280,6 +363,7 @@ class InlineParsingContext: AnyParsingContext {
                 xmlParser: parser,
                 elementName: elementName,
                 attributes: attributeDict,
+                errorLog: errorLog,
                 delegate: self,
                 parentContext: self
             )
@@ -288,6 +372,7 @@ class InlineParsingContext: AnyParsingContext {
                 xmlParser: parser,
                 elementName: elementName,
                 attributes: attributeDict,
+                errorLog: errorLog,
                 delegate: self,
                 parentContext: self
             )
@@ -329,7 +414,10 @@ extension InlineParsingContext: ImpressionParsingContextDelegate {
 }
 
 class Test: NSObject, InlineParsingContextDelegate, XMLParserDelegate {
+    static let errorLogUserInfoKey = "errorLogUserInfoKey"
+
     var inline: VAST.Element.InLine?
+    var errorLog = ParsingErrorLog()
 
     private var currentInlineParsingContext: InlineParsingContext?
 
@@ -345,7 +433,14 @@ class Test: NSObject, InlineParsingContextDelegate, XMLParserDelegate {
         xmlParser.delegate = self
         xmlParser.parse()
         guard let inline = self.inline else {
-            throw NSError(domain: "Test", code: 2, userInfo: [NSLocalizedDescriptionKey: "Did not parse impression"])
+            throw NSError(
+                domain: "Test",
+                code: 2,
+                userInfo: [
+                    NSLocalizedDescriptionKey: "VAST parsing failed",
+                    Self.errorLogUserInfoKey: errorLog.items
+                ]
+            )
         }
         return inline
     }
@@ -364,13 +459,14 @@ class Test: NSObject, InlineParsingContextDelegate, XMLParserDelegate {
         didStartElement elementName: String,
         namespaceURI: String?,
         qualifiedName qName: String?,
-        attributes attributeDict: [String : String] = [:]
+        attributes attributeDict: [String: String] = [:]
     ) {
         guard elementName == .vastElementNames.inLine else { return }
         currentInlineParsingContext = InlineParsingContext(
             xmlParser: parser,
             elementName: elementName,
             attributes: attributeDict,
+            errorLog: errorLog,
             delegate: self,
             parentContext: self
         )

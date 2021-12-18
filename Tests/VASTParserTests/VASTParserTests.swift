@@ -20,8 +20,13 @@ final class VASTParserTests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
         let test = Test()
-        let inLine = try test.parse(xmlString: inline)
-        print(inLine)
+        do {
+            let inLine = try test.parse(xmlString: inline)
+            print(inLine)
+        } catch {
+            let nsError = error as NSError
+            print(nsError.code, nsError.localizedDescription, nsError.userInfo)
+        }
     }
 }
 
