@@ -15,7 +15,7 @@ public extension VAST.Element {
         /// Wrapper responses preceding it should be triggered at the same time when the impression
         /// for the ad occurs, or as close in time as possible to when the impression occurs, to prevent
         /// impression-counting discrepancies.
-        public let impression: Impression
+        public let impression: [Impression]
         /// Any ad server that returns a VAST containing an `<InLine>` ad must generate a pseudo-
         /// unique identifier that is appropriate for all involved parties to track the lifecycle of that ad.
         /// This should be inserted into the `<AdServingId>` element, and also be included on all
@@ -99,7 +99,7 @@ public extension VAST.Element {
         public init(
             adSystem: AdSystem,
             adTitle: AdTitle,
-            impression: Impression,
+            impression: [Impression],
             adServingId: AdServingId,
             creatives: Creatives,
             category: Category?,

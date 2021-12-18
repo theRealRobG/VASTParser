@@ -1,12 +1,27 @@
 import XCTest
 @testable import VASTParser
 
+let inline = """
+        <InLine>
+            <AdSystem>FreeWheel</AdSystem>
+            <AdTitle>Peacock Test - EL_CI</AdTitle>
+            <Error>
+                <![CDATA[https://29773.v.fwmrm.net/ad/l/1?s=a163&n=171224%3B171224&t=1585129517131554013&f=&r=171224&adid=38604759&reid=24989088&arid=0&iw=&uxnw=171224&uxss=sg791194&uxct=4&et=e&cn=%5BERRORCODE%5D]]></Error>
+            <Impression id='FWi_38604759.0'>
+                <![CDATA[https://29773.v.fwmrm.net/ad/l/1?s=a163&n=171224%3B171224&t=1585129517131554013&f=&r=171224&adid=38604759&reid=24989088&arid=0&auid=&cn=defaultImpression&et=i&_cc=38604759,24989088,,,1585129517,1&tpos=354&iw=&uxnw=171224&uxss=sg791194&uxct=4&metr=1031&init=1&asid=238460940&ssid=15339143&vcid2=12345678-90ab-cdef-ghij-klmnopqrstuvwxyz_9a64df39e6d6b84232c69f7265888b76&pingids=1089]]></Impression>
+            <Impression id='FWi_38604759.0.1'>
+                <![CDATA[https://sb.scorecardresearch.com/p?c1=3&c2=28881558&c3=38604755&c4=6294735&c5=38604758&c12=&ns_ad_vevent=v_start&ns_ad_pcd=15&ns__t=269544036&ns__p=269544036&ns_st_pr=USA%3A%20Pearson%3A%20Full%20Episode&ns_st_ge=&ns_st_pu=NBCU%3A%20Peacock%3A%20On%20Domain%3A%20Mobile%3A%20App%3A%20On%20Demand&ns_st_ep=USA%3A%20The%20Rival%5E&ns_st_ct=NBCU%3A%20Peacock%3A%20On%20Domain%3A%20Mobile%3A%20Android%3A%20App%3A%20On%20Demand&cs_vp_sv=1&rn=269544036&ccr=1&ccrsdk=1&c6=midroll&ns_ap_device=&ns_ap_pn=]]></Impression>
+        </InLine>
+"""
+
 final class VASTParserTests: XCTestCase {
     func testExample() throws {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual("Hello, World!", "Hello, World!")
+        let test = Test()
+        let inLine = try test.parse(xmlString: inline)
+        print(inLine)
     }
 }
 

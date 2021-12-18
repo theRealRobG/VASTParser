@@ -28,6 +28,13 @@ public extension VAST.Element.Impression {
         case url(URL)
         case blank
 
+        public var url: URL? {
+            switch self {
+            case .url(let url): return url
+            case .blank: return nil
+            }
+        }
+
         public init?(_ content: String) {
             if content == "about:blank" {
                 self = .blank
