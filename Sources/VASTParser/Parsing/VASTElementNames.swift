@@ -74,48 +74,17 @@ extension String {
 
 import Foundation
 
-protocol ParsingContext: XMLParserDelegate {
-    associatedtype ParsedType
-    associatedtype DelegateType
-
-    var elementName: String { get }
-    var attributes: [String: String] { get }
-    var delegate: DelegateType? { get }
-    var parentContext: XMLParserDelegate? { get }
+class AnyParsingContext: NSObject, XMLParserDelegate {
+    let elementName: String
+    let attributes: [String: String]
+    var delegate: Any?
+    weak var parentContext: XMLParserDelegate?
 
     init(
         xmlParser: XMLParser,
         elementName: String,
         attributes: [String: String],
-        delegate: DelegateType,
-        parentContext: XMLParserDelegate?
-    )
-
-    func write() -> ParsedType?
-    func didParse(content: ParsedType)
-}
-
-protocol StringContentParsingContextDelegate: AnyObject {
-    func stringContentParsingContext(
-        _ parsingContext: StringContentParsingContext,
-        didParse content: String,
-        fromElementName elementName: String
-    )
-}
-
-class StringContentParsingContext: NSObject, ParsingContext {
-    var content: String?
-
-    let elementName: String
-    let attributes: [String: String]
-    weak var delegate: StringContentParsingContextDelegate?
-    weak var parentContext: XMLParserDelegate?
-
-    required init(
-        xmlParser: XMLParser,
-        elementName: String,
-        attributes: [String: String],
-        delegate: StringContentParsingContextDelegate,
+        delegate: Any,
         parentContext: XMLParserDelegate?
     ) {
         self.elementName = elementName
@@ -126,9 +95,8 @@ class StringContentParsingContext: NSObject, ParsingContext {
         xmlParser.delegate = self
     }
 
-    func write() -> String? { content }
-    func didParse(content: String) {
-        delegate?.stringContentParsingContext(self, didParse: content, fromElementName: elementName)
+    func didCompleteParsing() {
+        fatalError("Must be implemented in subclass")
     }
 
     func parser(
@@ -138,13 +106,58 @@ class StringContentParsingContext: NSObject, ParsingContext {
         qualifiedName qName: String?
     ) {
         guard elementName == self.elementName else { return }
-        if let parsedContent = write() {
-            didParse(content: parsedContent)
-        }
-        parser.delegate = parentContext
+        didCompleteParsing()
+        unlink(parser)
     }
 
-    func parser(_ parser: XMLParser, foundCharacters string: String) {
+    func parserDidEndDocument(_ parser: XMLParser) {
+        didCompleteParsing()
+        unlink(parser)
+    }
+
+    private func unlink(_ parser: XMLParser) {
+        parser.delegate = parentContext
+        delegate = nil
+        parentContext = nil
+    }
+}
+
+protocol StringContentParsingContextDelegate: AnyObject {
+    func stringContentParsingContext(
+        _ parsingContext: StringContentParsingContext,
+        didParse content: String,
+        fromElementName elementName: String
+    )
+}
+
+class StringContentParsingContext: AnyParsingContext {
+    var content: String?
+
+    var localDelegate: StringContentParsingContextDelegate? { super.delegate as? StringContentParsingContextDelegate }
+
+    init(
+        xmlParser: XMLParser,
+        elementName: String,
+        attributes: [String: String],
+        delegate: StringContentParsingContextDelegate,
+        parentContext: XMLParserDelegate?
+    ) {
+        super.init(
+            xmlParser: xmlParser,
+            elementName: elementName,
+            attributes: attributes,
+            delegate: delegate,
+            parentContext: parentContext
+        )
+    }
+
+    override func didCompleteParsing() {
+        if let content = content {
+            localDelegate?.stringContentParsingContext(self, didParse: content, fromElementName: elementName)
+        }
+    }
+
+    @objc func parser(_ parser: XMLParser, foundCharacters string: String) {
         self.content = string.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
@@ -157,56 +170,40 @@ protocol ImpressionParsingContextDelegate: AnyObject {
     )
 }
 
-class ImpressionParsingContext: NSObject, ParsingContext {
-    var id: String?
-    var url: URL?
+class ImpressionParsingContext: AnyParsingContext {
+    var url: VAST.Element.Impression.Content?
 
-    let elementName: String
-    let attributes: [String: String]
-    weak var delegate: ImpressionParsingContextDelegate?
-    weak var parentContext: XMLParserDelegate?
+    var localDelegate: ImpressionParsingContextDelegate? { super.delegate as? ImpressionParsingContextDelegate }
 
-    required init(
+    init(
         xmlParser: XMLParser,
         elementName: String,
         attributes: [String: String],
         delegate: ImpressionParsingContextDelegate,
         parentContext: XMLParserDelegate?
     ) {
-        self.elementName = elementName
-        self.attributes = attributes
-        self.delegate = delegate
-        self.parentContext = parentContext
-        super.init()
-        xmlParser.delegate = self
+        super.init(
+            xmlParser: xmlParser,
+            elementName: elementName,
+            attributes: attributes,
+            delegate: delegate,
+            parentContext: parentContext
+        )
     }
 
-    func write() -> VAST.Element.Impression? {
-        guard let id = self.id, let url = self.url else {
-            return nil
-        }
-        return VAST.Element.Impression(id: id, content: .url(url))
-    }
-
-    func didParse(content: VAST.Element.Impression) {
-        delegate?.impressionParsingContext(self, didParse: content, fromElementName: elementName)
-    }
-
-    func parser(
-        _ parser: XMLParser,
-        didEndElement elementName: String,
-        namespaceURI: String?,
-        qualifiedName qName: String?
-    ) {
-        guard elementName == self.elementName else { return }
-        if let parsedContent = write() {
-            didParse(content: parsedContent)
-        }
-        parser.delegate = parentContext
+    override func didCompleteParsing() {
+        guard let id = attributes["id"], let url = self.url else { return }
+        localDelegate?.impressionParsingContext(
+            self,
+            didParse: VAST.Element.Impression(id: id, content: url),
+            fromElementName: elementName
+        )
     }
 
     func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
-        self.url = String(data: CDATABlock, encoding: .utf8).flatMap { URL(string: $0) }
+        self.url = String(data: CDATABlock, encoding: .utf8).flatMap {
+            VAST.Element.Impression.Content($0.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
     }
 }
 
@@ -218,76 +215,59 @@ protocol InlineParsingContextDelegate: AnyObject {
     )
 }
 
-class InlineParsingContext: NSObject, ParsingContext {
+class InlineParsingContext: AnyParsingContext {
     var adSystem: VAST.Element.AdSystem?
     var adTitle: VAST.Element.AdTitle?
     var error: VAST.Element.Error?
     var impressions = [VAST.Element.Impression]()
 
-    let elementName: String
-    let attributes: [String: String]
-    weak var delegate: InlineParsingContextDelegate?
-    weak var parentContext: XMLParserDelegate?
+    var localDelegate: InlineParsingContextDelegate? { super.delegate as? InlineParsingContextDelegate }
 
     private var currentStringParsingContext: StringContentParsingContext?
     private var currentImpressionParsingContext: ImpressionParsingContext?
 
-    required init(
+    init(
         xmlParser: XMLParser,
         elementName: String,
         attributes: [String: String],
         delegate: InlineParsingContextDelegate,
         parentContext: XMLParserDelegate?
     ) {
-        self.elementName = elementName
-        self.attributes = attributes
-        self.delegate = delegate
-        self.parentContext = parentContext
-        super.init()
-        xmlParser.delegate = self
-    }
-
-    func write() -> VAST.Element.InLine? {
-        guard let adSystem = self.adSystem, let adTitle = self.adTitle, let error = self.error else {
-            return nil
-        }
-        return VAST.Element.InLine(
-            adSystem: adSystem,
-            adTitle: adTitle,
-            impression: impressions,
-            adServingId: VAST.Element.AdServingId(content: ""),
-            creatives: VAST.Element.Creatives(creative: []),
-            category: nil,
-            description: nil,
-            advertiser: nil,
-            pricing: nil,
-            survey: nil,
-            error: error,
-            extensions: nil,
-            viewableImpression: nil,
-            adVerifications: nil,
-            expires: nil
+        super.init(
+            xmlParser: xmlParser,
+            elementName: elementName,
+            attributes: attributes,
+            delegate: delegate,
+            parentContext: parentContext
         )
     }
 
-    func didParse(content: VAST.Element.InLine) {
-        delegate?.inlineParsingContext(self, didParse: content, fromElementName: elementName)
+    override func didCompleteParsing() {
+        guard let adSystem = self.adSystem, let adTitle = self.adTitle, let error = self.error else { return }
+        localDelegate?.inlineParsingContext(
+            self,
+            didParse: VAST.Element.InLine(
+                adSystem: adSystem,
+                adTitle: adTitle,
+                impression: impressions,
+                adServingId: VAST.Element.AdServingId(content: ""),
+                creatives: VAST.Element.Creatives(creative: []),
+                category: nil,
+                description: nil,
+                advertiser: nil,
+                pricing: nil,
+                survey: nil,
+                error: error,
+                extensions: nil,
+                viewableImpression: nil,
+                adVerifications: nil,
+                expires: nil
+            ),
+            fromElementName: elementName
+        )
     }
 
-    func parser(
-        _ parser: XMLParser,
-        didEndElement elementName: String,
-        namespaceURI: String?,
-        qualifiedName qName: String?
-    ) {
-        guard elementName == self.elementName else { return }
-        if let parsedContent = write() {
-            didParse(content: parsedContent)
-        }
-        parser.delegate = parentContext
-    }
-
-    func parser(
+    @objc func parser(
         _ parser: XMLParser,
         didStartElement elementName: String,
         namespaceURI: String?,
