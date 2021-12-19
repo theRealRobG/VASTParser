@@ -19,7 +19,7 @@ final class VASTParserTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        let test = Test()
+        let test = Test(parsingBehaviour: ParsingBehaviour(strictness: .loose))
         do {
             let inLine = try test.parse(xmlString: inline)
             print(inLine)

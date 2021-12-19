@@ -75,12 +75,57 @@ extension String {
 import Foundation
 
 class ParsingErrorLog {
-    private var log = [VASTParsingError]()
-
     var items: [VASTParsingError] { log }
+
+    private var log = [VASTParsingError]()
 
     func append(_ error: VASTParsingError) {
         log.append(error)
+    }
+}
+
+class ParsingBehaviour {
+    let defaults: DefaultConstants
+    let strictness: ParsingStrictness
+
+    init(
+        defaults: DefaultConstants = DefaultConstants(),
+        strictness: ParsingStrictness = .default
+    ) {
+        self.defaults = defaults
+        self.strictness = strictness
+    }
+}
+
+struct DefaultConstants {
+    var string: String = ""
+    var int: Int = -1
+    var double: Double = -1
+    var url: URL = URL(string: "about:blank")!
+}
+
+public struct ParsingStrictness: OptionSet {
+    public static let allowDefaultRequiredConstants = ParsingStrictness(rawValue: 1 << 0)
+    public static let allowDefaultRequiredElements = ParsingStrictness(rawValue: 1 << 1)
+    public static let allowUnexpectedElementStarts = ParsingStrictness(rawValue: 1 << 2)
+    public static let allowUnexpectedElementEnds = ParsingStrictness(rawValue: 1 << 3)
+
+    public static let `default`: ParsingStrictness = [
+        .allowUnexpectedElementStarts,
+        .allowUnexpectedElementEnds
+    ]
+    public static let loose: ParsingStrictness = [
+        .allowUnexpectedElementStarts,
+        .allowUnexpectedElementEnds,
+        .allowDefaultRequiredElements,
+        .allowDefaultRequiredConstants
+    ]
+    public static let strict: ParsingStrictness = []
+
+    public let rawValue: Int
+
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
     }
 }
 
@@ -123,7 +168,8 @@ protocol ErrorLog {
 class AnyParsingContext: NSObject, XMLParserDelegate {
     let elementName: String
     let attributes: [String: String]
-    var errorLog: ParsingErrorLog
+    let errorLog: ParsingErrorLog
+    let behaviour: ParsingBehaviour
     var delegate: Any?
     weak var parentContext: XMLParserDelegate?
 
@@ -132,19 +178,21 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
         elementName: String,
         attributes: [String: String],
         errorLog: ParsingErrorLog,
+        behaviour: ParsingBehaviour,
         delegate: Any,
         parentContext: XMLParserDelegate?
     ) {
         self.elementName = elementName
         self.attributes = attributes
         self.errorLog = errorLog
+        self.behaviour = behaviour
         self.delegate = delegate
         self.parentContext = parentContext
         super.init()
         xmlParser.delegate = self
     }
 
-    func didCompleteParsing() {
+    func didCompleteParsing(missingProperty: (String) throws -> Void, missingElement: (String) throws -> Void) throws {
         fatalError("Must be implemented in subclass")
     }
 
@@ -154,18 +202,66 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
         namespaceURI: String?,
         qualifiedName qName: String?
     ) {
-        guard elementName == self.elementName else {
+        if elementName != self.elementName {
             errorLog.append(
                 .unexpectedEndOfElement(parentElementName: self.elementName, unexpectedElementName: elementName)
             )
-            return
+            if behaviour.strictness.contains(.allowUnexpectedElementEnds) {
+                return
+            }
         }
-        didCompleteParsing()
+        do {
+            try didCompleteParsing(
+                missingProperty: {
+                    let error = VASTParsingError.missingRequiredProperty(
+                        parentElementName: elementName,
+                        missingPropertyName: $0
+                    )
+                    errorLog.append(error)
+                    if !behaviour.strictness.contains(.allowDefaultRequiredConstants) {
+                        throw error
+                    }
+                },
+                missingElement: {
+                    let error = VASTParsingError.missingRequiredProperty(
+                        parentElementName: elementName,
+                        missingPropertyName: $0
+                    )
+                    errorLog.append(error)
+                    if !behaviour.strictness.contains(.allowDefaultRequiredElements) {
+                        throw error
+                    }
+                }
+            )
+        } catch {}
         unlink(parser)
     }
 
     func parserDidEndDocument(_ parser: XMLParser) {
-        didCompleteParsing()
+        do {
+            try didCompleteParsing(
+                missingProperty: {
+                    let error = VASTParsingError.missingRequiredProperty(
+                        parentElementName: elementName,
+                        missingPropertyName: $0
+                    )
+                    errorLog.append(error)
+                    if !behaviour.strictness.contains(.allowDefaultRequiredConstants) {
+                        throw error
+                    }
+                },
+                missingElement: {
+                    let error = VASTParsingError.missingRequiredProperty(
+                        parentElementName: elementName,
+                        missingPropertyName: $0
+                    )
+                    errorLog.append(error)
+                    if !behaviour.strictness.contains(.allowDefaultRequiredElements) {
+                        throw error
+                    }
+                }
+            )
+        } catch {}
         unlink(parser)
     }
 
@@ -194,6 +290,7 @@ class StringContentParsingContext: AnyParsingContext {
         elementName: String,
         attributes: [String: String],
         errorLog: ParsingErrorLog,
+        behaviour: ParsingBehaviour,
         delegate: StringContentParsingContextDelegate,
         parentContext: XMLParserDelegate?
     ) {
@@ -202,15 +299,24 @@ class StringContentParsingContext: AnyParsingContext {
             elementName: elementName,
             attributes: attributes,
             errorLog: errorLog,
+            behaviour: behaviour,
             delegate: delegate,
             parentContext: parentContext
         )
     }
 
-    override func didCompleteParsing() {
-        if let content = content {
-            localDelegate?.stringContentParsingContext(self, didParse: content, fromElementName: elementName)
+    override func didCompleteParsing(
+        missingProperty: (String) throws -> Void,
+        missingElement: (String) throws -> Void
+    ) throws {
+        if content == nil {
+            try missingProperty("content")
         }
+        localDelegate?.stringContentParsingContext(
+            self,
+            didParse: content ?? behaviour.defaults.string,
+            fromElementName: elementName
+        )
     }
 
     @objc func parser(_ parser: XMLParser, foundCharacters string: String) {
@@ -236,6 +342,7 @@ class ImpressionParsingContext: AnyParsingContext {
         elementName: String,
         attributes: [String: String],
         errorLog: ParsingErrorLog,
+        behaviour: ParsingBehaviour,
         delegate: ImpressionParsingContextDelegate,
         parentContext: XMLParserDelegate?
     ) {
@@ -244,23 +351,28 @@ class ImpressionParsingContext: AnyParsingContext {
             elementName: elementName,
             attributes: attributes,
             errorLog: errorLog,
+            behaviour: behaviour,
             delegate: delegate,
             parentContext: parentContext
         )
     }
 
-    override func didCompleteParsing() {
-        guard let id = attributes["id"] else {
-            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "id"))
-            return
+    override func didCompleteParsing(
+        missingProperty: (String) throws -> Void,
+        missingElement: (String) throws -> Void
+    ) throws {
+        if attributes["id"] == nil {
+            try missingProperty("id")
         }
-        guard let url = self.url else {
-            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "content"))
-            return
+        if url == nil {
+            try missingProperty("content")
         }
         localDelegate?.impressionParsingContext(
             self,
-            didParse: VAST.Element.Impression(id: id, content: url),
+            didParse: VAST.Element.Impression(
+                id: attributes["id"] ?? behaviour.defaults.string,
+                content: url ?? .url(behaviour.defaults.url)
+            ),
             fromElementName: elementName
         )
     }
@@ -297,6 +409,7 @@ class InlineParsingContext: AnyParsingContext {
         elementName: String,
         attributes: [String: String],
         errorLog: ParsingErrorLog,
+        behaviour: ParsingBehaviour,
         delegate: InlineParsingContextDelegate,
         parentContext: XMLParserDelegate?
     ) {
@@ -305,35 +418,38 @@ class InlineParsingContext: AnyParsingContext {
             elementName: elementName,
             attributes: attributes,
             errorLog: errorLog,
+            behaviour: behaviour,
             delegate: delegate,
             parentContext: parentContext
         )
     }
 
-    override func didCompleteParsing() {
-        guard let adSystem = self.adSystem else {
-            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "adSystem"))
-            return
+    override func didCompleteParsing(
+        missingProperty: (String) throws -> Void,
+        missingElement: (String) throws -> Void
+    ) throws {
+        if adSystem == nil {
+            try missingElement(.vastElementNames.adSystem)
         }
-        guard let adTitle = self.adTitle else {
-            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "adTitle"))
-            return
+        if adTitle == nil {
+            try missingProperty(.vastElementNames.adTitle)
         }
-        guard let adServingId = self.adServingId else {
-            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "adServingId"))
-            return
+        if adServingId == nil {
+            try missingProperty(.vastElementNames.adServingId)
         }
-        guard let error = self.error else {
-            errorLog.append(.missingRequiredProperty(parentElementName: elementName, missingPropertyName: "error"))
-            return
+        if error == nil {
+            try missingProperty(.vastElementNames.error)
         }
         localDelegate?.inlineParsingContext(
             self,
             didParse: VAST.Element.InLine(
-                adSystem: adSystem,
-                adTitle: adTitle,
+                adSystem: adSystem ?? VAST.Element.AdSystem(
+                    version: behaviour.defaults.string,
+                    content: behaviour.defaults.string
+                ),
+                adTitle: adTitle ?? VAST.Element.AdTitle(content: behaviour.defaults.string),
                 impression: impressions,
-                adServingId: adServingId,
+                adServingId: adServingId ?? VAST.Element.AdServingId(content: behaviour.defaults.string),
                 creatives: VAST.Element.Creatives(creative: []),
                 category: nil,
                 description: nil,
@@ -364,6 +480,7 @@ class InlineParsingContext: AnyParsingContext {
                 elementName: elementName,
                 attributes: attributeDict,
                 errorLog: errorLog,
+                behaviour: behaviour,
                 delegate: self,
                 parentContext: self
             )
@@ -373,6 +490,7 @@ class InlineParsingContext: AnyParsingContext {
                 elementName: elementName,
                 attributes: attributeDict,
                 errorLog: errorLog,
+                behaviour: behaviour,
                 delegate: self,
                 parentContext: self
             )
@@ -418,8 +536,13 @@ class Test: NSObject, InlineParsingContextDelegate, XMLParserDelegate {
 
     var inline: VAST.Element.InLine?
     var errorLog = ParsingErrorLog()
+    let behaviour: ParsingBehaviour
 
     private var currentInlineParsingContext: InlineParsingContext?
+
+    init(parsingBehaviour: ParsingBehaviour = ParsingBehaviour()) {
+        self.behaviour = parsingBehaviour
+    }
 
     func parse(xmlString: String) throws -> VAST.Element.InLine {
         guard let data = xmlString.data(using: .utf8) else {
@@ -467,6 +590,7 @@ class Test: NSObject, InlineParsingContextDelegate, XMLParserDelegate {
             elementName: elementName,
             attributes: attributeDict,
             errorLog: errorLog,
+            behaviour: behaviour,
             delegate: self,
             parentContext: self
         )
