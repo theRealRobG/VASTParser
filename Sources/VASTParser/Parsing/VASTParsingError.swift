@@ -1,13 +1,13 @@
 import Foundation
 
-enum VASTParsingError: CustomNSError {
+public enum VASTParsingError: CustomNSError, Equatable {
     case unexpectedStartOfElement(parentElementName: String, unexpectedElementName: String)
     case unexpectedEndOfElement(parentElementName: String, unexpectedElementName: String)
     case missingRequiredProperty(parentElementName: String, missingPropertyName: String)
 
-    static var errorDomain: String { "VASTParsingErrorDomain" }
+    public static var errorDomain: String { "VASTParsingErrorDomain" }
 
-    var errorCode: Int {
+    public var errorCode: Int {
         switch self {
         case .unexpectedStartOfElement: return 100
         case .unexpectedEndOfElement: return 101
@@ -15,7 +15,7 @@ enum VASTParsingError: CustomNSError {
         }
     }
 
-    var errorUserInfo: [String: Any] {
+    public var errorUserInfo: [String: Any] {
         var userInfo = [String: Any]()
         switch self {
         case .unexpectedStartOfElement(let parentElementName, let unexpectedElementName):
