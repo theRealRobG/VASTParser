@@ -168,6 +168,7 @@ protocol ErrorLog {
 class AnyParsingContext: NSObject, XMLParserDelegate {
     let elementName: String
     let attributes: [String: String]
+    let expectedElementNames: Set<String>
     let errorLog: ParsingErrorLog
     let behaviour: ParsingBehaviour
     var delegate: Any?
@@ -177,6 +178,7 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
         xmlParser: XMLParser,
         elementName: String,
         attributes: [String: String],
+        expectedElementNames: Set<String>,
         errorLog: ParsingErrorLog,
         behaviour: ParsingBehaviour,
         delegate: Any,
@@ -184,6 +186,7 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
     ) {
         self.elementName = elementName
         self.attributes = attributes
+        self.expectedElementNames = expectedElementNames
         self.errorLog = errorLog
         self.behaviour = behaviour
         self.delegate = delegate
@@ -193,7 +196,15 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
     }
 
     func didCompleteParsing(missingProperty: (String) throws -> Void, missingElement: (String) throws -> Void) throws {
-        fatalError("Must be implemented in subclass")
+        assertionFailure("Must be implemented in subclass")
+    }
+
+    func parser(
+        _ parser: XMLParser,
+        didStartElement elementName: String,
+        attributes attributeDict: [String: String]
+    ) {
+        assertionFailure("Must be implemented in subclass")
     }
 
     func parser(
@@ -265,6 +276,27 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
         unlink(parser)
     }
 
+    func parser(
+        _ parser: XMLParser,
+        didStartElement elementName: String,
+        namespaceURI: String?,
+        qualifiedName qName: String?,
+        attributes attributeDict: [String : String] = [:]
+    ) {
+        if !expectedElementNames.contains(elementName) {
+            let error = VASTParsingError.unexpectedStartOfElement(
+                parentElementName: self.elementName,
+                unexpectedElementName: elementName
+            )
+            errorLog.append(error)
+            guard behaviour.strictness.contains(.allowUnexpectedElementStarts) else {
+                unlink(parser)
+                return
+            }
+        }
+        self.parser(parser, didStartElement: elementName, attributes: attributes)
+    }
+
     private func unlink(_ parser: XMLParser) {
         parser.delegate = parentContext
         delegate = nil
@@ -298,6 +330,7 @@ class StringContentParsingContext: AnyParsingContext {
             xmlParser: xmlParser,
             elementName: elementName,
             attributes: attributes,
+            expectedElementNames: [],
             errorLog: errorLog,
             behaviour: behaviour,
             delegate: delegate,
@@ -350,6 +383,7 @@ class ImpressionParsingContext: AnyParsingContext {
             xmlParser: xmlParser,
             elementName: elementName,
             attributes: attributes,
+            expectedElementNames: [],
             errorLog: errorLog,
             behaviour: behaviour,
             delegate: delegate,
@@ -417,6 +451,12 @@ class InlineParsingContext: AnyParsingContext {
             xmlParser: xmlParser,
             elementName: elementName,
             attributes: attributes,
+            expectedElementNames: [
+                .vastElementNames.adSystem,
+                .vastElementNames.adTitle,
+                .vastElementNames.error,
+                .vastElementNames.impression
+            ],
             errorLog: errorLog,
             behaviour: behaviour,
             delegate: delegate,
@@ -432,13 +472,13 @@ class InlineParsingContext: AnyParsingContext {
             try missingElement(.vastElementNames.adSystem)
         }
         if adTitle == nil {
-            try missingProperty(.vastElementNames.adTitle)
+            try missingElement(.vastElementNames.adTitle)
         }
         if adServingId == nil {
-            try missingProperty(.vastElementNames.adServingId)
+            try missingElement(.vastElementNames.adServingId)
         }
         if error == nil {
-            try missingProperty(.vastElementNames.error)
+            try missingElement(.vastElementNames.error)
         }
         localDelegate?.inlineParsingContext(
             self,
@@ -466,11 +506,9 @@ class InlineParsingContext: AnyParsingContext {
         )
     }
 
-    @objc func parser(
+    override func parser(
         _ parser: XMLParser,
         didStartElement elementName: String,
-        namespaceURI: String?,
-        qualifiedName qName: String?,
         attributes attributeDict: [String : String] = [:]
     ) {
         switch elementName {
