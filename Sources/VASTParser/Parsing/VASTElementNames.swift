@@ -161,10 +161,6 @@ enum VASTParsingError: CustomNSError {
     }
 }
 
-protocol ErrorLog {
-    var errorLog: [VASTParsingError] { get set }
-}
-
 class AnyParsingContext: NSObject, XMLParserDelegate {
     let elementName: String
     let attributes: [String: String]
