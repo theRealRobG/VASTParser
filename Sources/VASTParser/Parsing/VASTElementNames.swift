@@ -195,7 +195,7 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
         xmlParser.delegate = self
     }
 
-    func didCompleteParsing(missingProperty: (String) throws -> Void, missingElement: (String) throws -> Void) throws {
+    func didCompleteParsing(missingConstant: (String) throws -> Void, missingElement: (String) throws -> Void) throws {
         assertionFailure("Must be implemented in subclass")
     }
 
@@ -223,7 +223,7 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
         }
         do {
             try didCompleteParsing(
-                missingProperty: {
+                missingConstant: {
                     let error = VASTParsingError.missingRequiredProperty(
                         parentElementName: elementName,
                         missingPropertyName: $0
@@ -251,7 +251,7 @@ class AnyParsingContext: NSObject, XMLParserDelegate {
     func parserDidEndDocument(_ parser: XMLParser) {
         do {
             try didCompleteParsing(
-                missingProperty: {
+                missingConstant: {
                     let error = VASTParsingError.missingRequiredProperty(
                         parentElementName: elementName,
                         missingPropertyName: $0
@@ -339,11 +339,11 @@ class StringContentParsingContext: AnyParsingContext {
     }
 
     override func didCompleteParsing(
-        missingProperty: (String) throws -> Void,
+        missingConstant: (String) throws -> Void,
         missingElement: (String) throws -> Void
     ) throws {
         if content == nil {
-            try missingProperty("content")
+            try missingConstant("content")
         }
         localDelegate?.stringContentParsingContext(
             self,
@@ -392,14 +392,14 @@ class ImpressionParsingContext: AnyParsingContext {
     }
 
     override func didCompleteParsing(
-        missingProperty: (String) throws -> Void,
+        missingConstant: (String) throws -> Void,
         missingElement: (String) throws -> Void
     ) throws {
         if attributes["id"] == nil {
-            try missingProperty("id")
+            try missingConstant("id")
         }
         if url == nil {
-            try missingProperty("content")
+            try missingConstant("content")
         }
         localDelegate?.impressionParsingContext(
             self,
@@ -465,7 +465,7 @@ class InlineParsingContext: AnyParsingContext {
     }
 
     override func didCompleteParsing(
-        missingProperty: (String) throws -> Void,
+        missingConstant: (String) throws -> Void,
         missingElement: (String) throws -> Void
     ) throws {
         if adSystem == nil {
