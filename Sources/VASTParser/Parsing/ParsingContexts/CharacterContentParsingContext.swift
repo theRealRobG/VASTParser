@@ -27,7 +27,7 @@ public extension VAST.Parsing {
                 xmlParser: xmlParser,
                 elementName: elementName,
                 attributes: [:],
-                expectedElementNames: [],
+                expectedElementNames: .some([]),
                 errorLog: errorLog,
                 behaviour: behaviour,
                 delegate: delegate,

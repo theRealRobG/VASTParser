@@ -149,6 +149,31 @@ class AnyParsingContextTests: XCTestCase {
         wait(forExpectation: startElementExp)
     }
 
+    func test_parserDidStartElement_whenAllowAllElementNames_shouldCompleteWithNoErrors() {
+        let startElementExp = expectation(description: "wait for start element")
+        startElementExp.expectedFulfillmentCount = 2
+        let expectedElementNames = ["UnexpectedOne", "UnexpectedTwo"]
+        let expectedAttributeDicts = [["UnexpectedKey": "UnexpectedValue"], [:]]
+        let context = makeTestParsingContext(expectedElementNames: .all)
+        var callIndex = 0
+        context.parserDidStartElementListener = { _, elementName, attributeDict in
+            XCTAssertEqual(elementName, expectedElementNames[callIndex])
+            XCTAssertEqual(attributeDict, expectedAttributeDicts[callIndex])
+            callIndex += 1
+            startElementExp.fulfill()
+        }
+        for i in 0...1 {
+            context.parser(
+                xmlParser,
+                didStartElement: expectedElementNames[i],
+                namespaceURI: nil,
+                qualifiedName: nil,
+                attributes: expectedAttributeDicts[i]
+            )
+        }
+        wait(forExpectation: startElementExp)
+    }
+
     func test_parserDidEndElement_whenExpectedElement_shouldCompleteParsingAndUnlink() {
         let completeParsingExpectation = expectation(description: "wait for complete parsing")
         let expectedElementName = "AdSystem"
@@ -359,6 +384,24 @@ private extension AnyParsingContextTests {
         elementName: String = "VAST",
         attributes: [String: String] = [:],
         expectedElementNames: Set<String> = [],
+        behaviour: VAST.Parsing.Behaviour = VAST.Parsing.Behaviour()
+    ) -> TestParsingContext {
+        TestParsingContext(
+            xmlParser: xmlParser,
+            elementName: elementName,
+            attributes: attributes,
+            expectedElementNames: .some(expectedElementNames),
+            errorLog: errorLog,
+            behaviour: behaviour,
+            delegate: self,
+            parentContext: mockParserDelegate
+        )
+    }
+
+    func makeTestParsingContext(
+        elementName: String = "VAST",
+        attributes: [String: String] = [:],
+        expectedElementNames: VAST.Parsing.AnyParsingContext.ExpectedElementNames,
         behaviour: VAST.Parsing.Behaviour = VAST.Parsing.Behaviour()
     ) -> TestParsingContext {
         TestParsingContext(

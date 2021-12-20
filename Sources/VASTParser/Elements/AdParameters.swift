@@ -11,13 +11,13 @@ public extension VAST.Element {
     ///
     /// When a VAST response is used to serve a VPAID ad unit, the `<AdParameters>` element is currently the only
     /// way to pass information from the VAST response into the VPAID object; no other mechanism is provided.
-    struct AdParameters {
+    struct AdParameters: Equatable {
         /// Metadata for the ad.
         public let content: String
         /// Identifies whether the ad parameters are xml-encoded.
-        public let xmlEncoded: Bool
+        public let xmlEncoded: Bool?
 
-        public init(content: String, xmlEncoded: Bool) {
+        public init(content: String, xmlEncoded: Bool?) {
             self.content = content
             self.xmlEncoded = xmlEncoded
         }

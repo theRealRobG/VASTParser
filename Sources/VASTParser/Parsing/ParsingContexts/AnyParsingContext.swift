@@ -5,6 +5,7 @@ extension VAST.Parsing {
         public let elementName: String
         public let attributes: [String: String]
         public let expectedElementNames: Set<String>
+        public let shouldAllowAllNames: Bool
         public let errorLog: ErrorLog
         public let behaviour: Behaviour
         public var delegate: Any?
@@ -20,7 +21,7 @@ extension VAST.Parsing {
             xmlParser: XMLParser,
             elementName: String,
             attributes: [String: String],
-            expectedElementNames: Set<String>,
+            expectedElementNames: ExpectedElementNames,
             errorLog: ErrorLog,
             behaviour: Behaviour,
             delegate: Any,
@@ -28,7 +29,14 @@ extension VAST.Parsing {
         ) {
             self.elementName = elementName
             self.attributes = attributes
-            self.expectedElementNames = expectedElementNames
+            switch expectedElementNames {
+            case .some(let names):
+                self.expectedElementNames = names
+                self.shouldAllowAllNames = false
+            case .all:
+                self.expectedElementNames = []
+                self.shouldAllowAllNames = true
+            }
             self.errorLog = errorLog
             self.behaviour = behaviour
             self.delegate = delegate
@@ -59,6 +67,10 @@ extension VAST.Parsing {
             qualifiedName qName: String?,
             attributes attributeDict: [String : String] = [:]
         ) {
+            if shouldAllowAllNames {
+                self.parser(parser, didStartElement: elementName, attributes: attributeDict)
+                return
+            }
             guard expectedElementNames.contains(elementName) else {
                 errorLog.append(
                     .unexpectedStartOfElement(
@@ -138,5 +150,12 @@ extension VAST.Parsing {
             delegate = nil
             parentContext = nil
         }
+    }
+}
+
+public extension VAST.Parsing.AnyParsingContext {
+    enum ExpectedElementNames {
+        case some(Set<String>)
+        case all
     }
 }
