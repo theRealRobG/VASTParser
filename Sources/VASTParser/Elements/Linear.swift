@@ -4,6 +4,9 @@ public extension VAST.Element {
     /// creative contains a `<Duration>` element to communicate the intended runtime and a
     /// `<MediaFiles>` element used to provide the needed video or audio files for ad execution.
     struct Linear {
+        /// A time value for the duration of the Linear ad in the format HH:MM:SS.mmm (.mmm is optional and indicates
+        /// milliseconds).
+        ///
         /// The ad server uses the `<Duration>` element to denote the intended playback duration for the video or audio
         /// component of the ad. Time value may be in the format HH:MM:SS.mmm where .mmm indicates milliseconds.
         /// Providing milliseconds is optional.

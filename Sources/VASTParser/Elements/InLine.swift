@@ -7,6 +7,8 @@ public extension VAST.Element {
         /// Optionally, a version number for the ad system may also be provided using the version
         /// attribute.
         public let adSystem: AdSystem
+        /// A string that provides a common name for the ad.
+        ///
         /// The ad serving party must provide a title for the ad using the `<AdTitle>` element. If a longer
         /// description is needed, the `<Description>` element can be used.
         public let adTitle: AdTitle
@@ -41,6 +43,8 @@ public extension VAST.Element {
         /// Quality Assurance Guidelines (QAG) describes site content, but is sometimes used to describe
         /// ad content.
         public let category: Category?
+        /// A string that provides a long ad description
+        ///
         /// When a longer description of the ad is needed, the `<Description>` element can be used.
         public let description: Description?
         /// Providing an advertiser name can help publishers prevent display of the ad with its
@@ -61,6 +65,8 @@ public extension VAST.Element {
         /// determine how surveys are implemented and executed. Multiple survey elements may be
         /// provided.
         public let survey: Survey?
+        /// A URI supplied by the ad server and used to report the no ad response.
+        ///
         /// The `<Error>` element contains a URI that the player uses to notify the ad server when
         /// errors occur with ad playback. If the URI contains an `[ERRORCODE]` macro, the media player
         /// must populate the macro with an error code as defined in section 2.3.6.
@@ -93,6 +99,8 @@ public extension VAST.Element {
         /// or more `<Verification>` elements, which are used to initiate a controlled container
         /// where code can be executed for collecting data to verify ad playback details.
         public let adVerifications: AdVerifications?
+        /// An integer value that defines the expiry period (in seconds).
+        ///
         /// The number of seconds in which the ad is valid for execution. In cases where the ad is
         /// requested ahead of time, this timing indicates how many seconds after the request that the
         /// ad expires and cannot be played. This element is useful for preventing an ad from playing

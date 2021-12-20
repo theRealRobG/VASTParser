@@ -6,11 +6,17 @@ public extension VAST.Element {
         /// The URI to a static creative file to be used for the ad component identified in the parent element, which is
         /// either: `<NonLinear>`, `<Companion>`, or `<Icon>`.
         public let staticResource: [StaticResource]
+        /// A URI to the iframe creative file to be used for the ad component identified in the parent element.
+        ///
         /// The URI to an HTML resource file to be loaded into an iframe by the publisher. Associated with the ad
         /// component identified in the parent element, which is either: `<NonLinear>`, `<Companion>`, or `<Icon>`.
         public let iFrameResource: [IFrameResource]
+        /// A HTML code snippet (within a CDATA element)
+        ///
         /// A “snippet” of HTML code to be inserted directly within the publisher’s HTML page code.
         public let htmlResource: [HTMLResource]
+        /// A URI for the tracking resource file to be called when the icon creative is displayed.
+        ///
         /// The view tracking for icons is used to track when the icon creative is displayed. The player uses the
         /// included URI to notify the icon server when the icon has been displayed.
         public let iconViewTracking: [IconViewTracking]

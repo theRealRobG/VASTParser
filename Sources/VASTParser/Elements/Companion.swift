@@ -10,9 +10,13 @@ public extension VAST.Element {
         /// The URI to a static creative file to be used for the ad component identified in the parent element, which is
         /// either: `<NonLinear>`, `<Companion>`, or `<Icon>`.
         public let staticResource: [StaticResource]
+        /// A URI to the iframe creative file to be used for the ad component identified in the parent element.
+        ///
         /// The URI to an HTML resource file to be loaded into an iframe by the publisher. Associated with the ad
         /// component identified in the parent element, which is either: `<NonLinear>`, `<Companion>`, or `<Icon>`.
         public let iFrameResource: [IFrameResource]
+        /// A HTML code snippet (within a CDATA element)
+        ///
         /// A “snippet” of HTML code to be inserted directly within the publisher’s HTML page code.
         public let htmlResource: [HTMLResource]
         /// When the companion ad creative handles the clickthrough in an InLine ad, the CompanionClickTracking element
@@ -94,9 +98,13 @@ public extension VAST.Element {
         /// When a VAST response is used to serve a VPAID ad unit, the `<AdParameters>` element is currently the only
         /// way to pass information from the VAST response into the VPAID object; no other mechanism is provided.
         public let adParameters: AdParameters?
+        /// A string to describe the creative when an ad viewer mouses over the ad.
+        ///
         /// The AltText element is used to provide a description of the companion creative when an ad viewer mouses over
         /// the ad.
         public let altText: AltText?
+        /// A URI to the advertiser’s page that the media player opens when the viewer clicks the companion ad.
+        ///
         /// Most companion creative can provide a clickthrough of their own, but in the case where the creative cannot
         /// provide a clickthrough, such as with a simple static image, the CompanionClickThrough element can be used to
         /// provide the clickthrough.

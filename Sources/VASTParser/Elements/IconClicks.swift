@@ -3,6 +3,8 @@ public extension VAST.Element {
     struct IconClicks {
         /// `<IconClickTracking>` is used to track click activity within the icon.
         public let iconClickTracking: [IconClickTracking]
+        /// A URI to the industry program page opened when a viewer clicks the icon.
+        ///
         /// The `<IconClickThrough>` is used to provide a URI to the industry program page that the media player opens
         /// when the icon is clicked.
         public let iconClickThrough: IconClickThrough?

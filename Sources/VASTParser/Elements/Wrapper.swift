@@ -13,6 +13,10 @@ public extension VAST.Element {
         /// for the ad occurs, or as close in time as possible to when the impression occurs, to prevent
         /// impression-counting discrepancies.
         public let impression: [Impression]
+        /// A URI to a VAST response that may be another VAST Wrapper or a VAST InLine ad. The number of VAST wrappers
+        /// should not exceed 5 before an InLine ad is served. After 5 VAST wrapper responses, acceptance of additional
+        /// VAST responses is at the publisher’s discretion.
+        ///
         /// While VAST Wrappers don’t provide all the same elements offered for an InLine ad, the `<VASTAdTagURI>` is
         /// the only element that is unique to Wrappers. The VASTAdTagURI is used to provide a URI to a secondary VAST
         /// response. This secondary response may be another Wrapper, but eventually a VAST wrapper must return an
@@ -44,6 +48,8 @@ public extension VAST.Element {
         /// When included as part of a VAST Wrapper in a chain of Wrappers, only the value offered in the first
         /// Wrapper need be considered.
         public let pricing: Pricing?
+        /// A URI supplied by the ad server and used to report the no ad response.
+        ///
         /// The `<Error>` element contains a URI that the player uses to notify the ad server when errors occur with ad
         /// playback. If the URI contains an `[ERRORCODE]` macro, the media player must populate the macro with an error
         /// code as defined in section 2.3.6 of VAST 4.2.

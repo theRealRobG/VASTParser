@@ -30,6 +30,8 @@ public extension VAST.Element {
         /// The verification vendor may provide URIs for tracking events relating to the execution of their code during
         /// the ad session.
         public let trackingEvents: TrackingEvents?
+        /// CDATA-wrapped metadata string for the verification executable.
+        ///
         /// `<VerificationParameters>` contains a CDATA-wrapped string intended for bootstrapping the verification code
         /// and providing metadata about the current impression. The format of the string is up to the individual vendor
         /// and should be passed along verbatim.

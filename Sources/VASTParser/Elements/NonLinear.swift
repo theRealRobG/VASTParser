@@ -10,9 +10,13 @@ public extension VAST.Element {
         /// The URI to a static creative file to be used for the ad component identified in the parent element, which is
         /// either: `<NonLinear>`, `<Companion>`, or `<Icon>`.
         public let staticResource: [StaticResource]
+        /// A URI to the iframe creative file to be used for the ad component identified in the parent element.
+        ///
         /// The URI to an HTML resource file to be loaded into an iframe by the publisher. Associated with the ad
         /// component identified in the parent element, which is either: `<NonLinear>`, `<Companion>`, or `<Icon>`.
         public let iFrameResource: [IFrameResource]
+        /// A HTML code snippet (within a CDATA element)
+        ///
         /// A “snippet” of HTML code to be inserted directly within the publisher’s HTML page code.
         public let htmlResource: [HTMLResource]
         /// Some ad serving systems may want to send data to the media file when first initialized. For example, the
@@ -44,6 +48,8 @@ public extension VAST.Element {
         ///   - Any static resource file where the media player handles the click, such as when “playerHandles=true” in
         ///     a VPAID AdClickThru event
         public let nonLinearClickTracking: [NonLinearClickTracking]
+        /// A URI to the advertiser’s page that the media player opens when the viewer clicks the NonLinear ad.
+        ///
         /// Most NonLinear creative can provide a clickthrough of their own, but in the case where the creative cannot
         /// provide a clickthrough, such as with a simple static image, the `<NonLinearClickThrough>` element can be
         /// used to provide the clickthrough.

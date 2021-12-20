@@ -16,12 +16,21 @@ public extension VAST.Element {
         /// An ad server id for the impression. Viewable impression resources of the same id should be
         /// requested at the same time, or as close in time as possible, to help prevent discrepancies.
         public let id: String
+        /// A URI that directs the media player to a tracking resource file that the media player should
+        /// request if the ad is executed but never meets criteria for a viewable impression.
+        ///
         /// The `<Viewable>` element is used to place a URI that the player triggers if and when the
         /// ad meets criteria for a viewable video ad impression.
         public let viewable: [Viewable]
+        /// A URI that directs the media player to a tracking resource file that the media player should
+        /// request if the ad is executed but never meets criteria for a viewable impression.
+        ///
         /// The `<NotViewable>` element is a container for placing a URI that the player triggers if
         /// the ad is executed but never meets criteria for a viewable video ad impression.
         public let notViewable: [NotViewable]
+        /// A URI that directs the media player to a tracking resource file that the media player should
+        /// request if the player cannot determine whether criteria is met for a viewable impression.
+        ///
         /// The `<ViewUndetermined>` element is a container for placing a URI that the player
         /// triggers if it cannot determine whether the ad has met criteria for a viewable video ad
         /// impression.

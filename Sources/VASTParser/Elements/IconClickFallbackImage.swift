@@ -8,6 +8,8 @@ public extension VAST.Element {
         /// The URI to a static creative file to be used for the ad component identified in the parent element, which is
         /// either: `<NonLinear>`, `<Companion>`, or `<Icon>`.
         public let staticResource: [StaticResource]
+        /// A string to describe the creative when an ad viewer mouses over the ad.
+        ///
         /// The AltText element is used to provide a description of the companion creative when an ad viewer mouses over
         /// the ad.
         public let altText: AltText?
