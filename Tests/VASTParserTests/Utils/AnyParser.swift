@@ -10,11 +10,21 @@ class AnyParser<T>: NSObject, XMLParserDelegate {
     var element: T?
     var currentParsingContext: VAST.Parsing.AnyParsingContext?
 
-    init(
+    convenience init(
         elementType: T.Type = T.self,
         behaviour: VAST.Parsing.Behaviour = VAST.Parsing.Behaviour(strictness: .loose)
     ) {
-        self.elementName = "\(elementType)".split(separator: ".").map { String($0) }.last ?? "\(elementType)"
+        self.init(
+            elementName: "\(elementType)".split(separator: ".").map { String($0) }.last ?? "\(elementType)",
+            behaviour: behaviour
+        )
+    }
+
+    init(
+        elementName: String,
+        behaviour: VAST.Parsing.Behaviour = VAST.Parsing.Behaviour(strictness: .loose)
+    ) {
+        self.elementName = elementName
         self.behaviour = behaviour
     }
 
@@ -39,6 +49,15 @@ class AnyParser<T>: NSObject, XMLParserDelegate {
         switch elementName {
         case .vastElementName.adParameters:
             currentParsingContext = VAST.Parsing.AdParametersParsingContext(
+                xmlParser: parser,
+                attributes: attributeDict,
+                errorLog: errorLog,
+                behaviour: behaviour,
+                delegate: self,
+                parentContext: self
+            )
+        case .vastElementName.adSystem:
+            currentParsingContext = VAST.Parsing.AdSystemParsingContext(
                 xmlParser: parser,
                 attributes: attributeDict,
                 errorLog: errorLog,

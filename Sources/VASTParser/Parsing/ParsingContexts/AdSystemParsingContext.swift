@@ -1,32 +1,31 @@
 import Foundation
 
-public protocol CharacterContentParsingContextDelegate: AnyObject {
-    func stringContentParsingContext(
-        _ parsingContext: VAST.Parsing.CharacterContentParsingContext,
-        didParse content: String,
-        fromElementName elementName: String
+public protocol AdSystemParsingContextDelegate: AnyObject {
+    func adSystemParsingContext(
+        _ parsingContext: VAST.Parsing.AdSystemParsingContext,
+        didParse adSystem: VAST.Element.AdSystem
     )
 }
 
 public extension VAST.Parsing {
-    class CharacterContentParsingContext: AnyParsingContext {
+    class AdSystemParsingContext: AnyParsingContext {
         private var content: String?
-        private var localDelegate: CharacterContentParsingContextDelegate? {
-            super.delegate as? CharacterContentParsingContextDelegate
+        private var localDelegate: AdSystemParsingContextDelegate? {
+            super.delegate as? AdSystemParsingContextDelegate
         }
 
         public init(
             xmlParser: XMLParser,
-            elementName: String,
+            attributes: [String: String],
             errorLog: ErrorLog,
             behaviour: Behaviour,
-            delegate: CharacterContentParsingContextDelegate,
+            delegate: AdSystemParsingContextDelegate,
             parentContext: XMLParserDelegate?
         ) {
             super.init(
                 xmlParser: xmlParser,
-                elementName: elementName,
-                attributes: [:],
+                elementName: .vastElementName.adSystem,
+                attributes: attributes,
                 expectedElementNames: .some([]),
                 errorLog: errorLog,
                 behaviour: behaviour,
@@ -42,10 +41,12 @@ public extension VAST.Parsing {
             if content == nil {
                 try missingConstant("content")
             }
-            localDelegate?.stringContentParsingContext(
+            localDelegate?.adSystemParsingContext(
                 self,
-                didParse: content ?? behaviour.defaults.string,
-                fromElementName: elementName
+                didParse: VAST.Element.AdSystem(
+                    content: content ?? behaviour.defaults.string,
+                    version: attributes["version"]
+                )
             )
         }
 
@@ -59,3 +60,4 @@ public extension VAST.Parsing {
         }
     }
 }
+

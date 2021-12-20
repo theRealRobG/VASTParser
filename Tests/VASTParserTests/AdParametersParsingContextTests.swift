@@ -2,13 +2,13 @@ import VASTParser
 import Foundation
 import XCTest
 
-let exampleNoXMLEncodedAttribute = """
+private let exampleNoXMLEncodedAttribute = """
 <AdParameters>key=value</AdParameters>
 """
-let exampleXMLEncodedAttributeFalse = """
+private let exampleXMLEncodedAttributeFalse = """
 <AdParameters xmlEncoded="false">key=value</AdParameters>
 """
-let exampleXMLEncodedAttributeTrue = """
+private let exampleXMLEncodedAttributeTrue = """
 <AdParameters xmlEncoded="true">
     <Key>value</Key>
 </AdParameters>

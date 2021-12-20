@@ -16,6 +16,9 @@ public extension VAST.Element {
         /// for the ad occurs, or as close in time as possible to when the impression occurs, to prevent
         /// impression-counting discrepancies.
         public let impression: Impression
+        /// A unique or pseudo-unique (long enough to be unique when combined with timestamp data)
+        /// GUID.
+        ///
         /// Any ad server that returns a VAST containing an `<InLine>` ad must generate a pseudo-
         /// unique identifier that is appropriate for all involved parties to track the lifecycle of that ad.
         /// This should be inserted into the `<AdServingId>` element, and also be included on all
