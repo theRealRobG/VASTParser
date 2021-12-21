@@ -65,6 +65,15 @@ class AnyParser<T>: NSObject, XMLParserDelegate {
                 delegate: self,
                 parentContext: self
             )
+        case .vastElementName.javaScriptResource:
+            currentParsingContext = VAST.Parsing.JavaScriptResourceParsingContext(
+                xmlParser: parser,
+                attributes: attributeDict,
+                errorLog: errorLog,
+                behaviour: behaviour,
+                delegate: self,
+                parentContext: self
+            )
         default:
             break
         }

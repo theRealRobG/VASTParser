@@ -13,16 +13,16 @@ public extension VAST.Element {
     /// only execute resources marked `browserOptional="true"`. If only `browserOptional="false"` resources are
     /// provided, the player must trigger any provided `verificationNotExecuted` tracking events with reason code 2,
     /// to indicate the provided code is not supported.
-    struct JavaScriptResource {
+    struct JavaScriptResource: Equatable {
         /// A CDATA-wrapped URI to the JavaScript used to collect data
         public let content: URL
         /// The name of the API framework used to execute the AdVerification code
         public let apiFramework: String
         /// Boolean value. If `true`, this resource is optimized and able to execute in an environment without DOM and
         /// other browser built-ins (e.g. iOS' **JavaScriptCore**).
-        public let browserOptional: Bool?
+        public let browserOptional: Bool
 
-        init(content: URL, apiFramework: String, browserOptional: Bool?) {
+        public init(content: URL, apiFramework: String, browserOptional: Bool) {
             self.content = content
             self.apiFramework = apiFramework
             self.browserOptional = browserOptional
