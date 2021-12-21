@@ -43,8 +43,9 @@ public extension VAST.Parsing {
             }
             localDelegate?.adSystemParsingContext(
                 self,
-                didParse: VAST.Element.AdSystem(
-                    content: content ?? behaviour.defaults.string,
+                didParse: VAST.Element.AdSystem.make(
+                    withDefaults: behaviour.defaults,
+                    content: content,
                     version: attributes["version"]
                 )
             )
@@ -61,3 +62,15 @@ public extension VAST.Parsing {
     }
 }
 
+extension VAST.Element.AdSystem {
+    static func make(
+        withDefaults defaults: VAST.Parsing.DefaultConstants,
+        content: String? = nil,
+        version: String? = nil
+    ) -> VAST.Element.AdSystem {
+        VAST.Element.AdSystem(
+            content: content ?? defaults.string,
+            version: version
+        )
+    }
+}

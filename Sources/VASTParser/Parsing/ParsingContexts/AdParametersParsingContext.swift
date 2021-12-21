@@ -58,15 +58,12 @@ public extension VAST.Parsing {
             if content == nil {
                 try missingConstant("content")
             }
-            var isXMLEncoded: Bool?
-            if let xmlEncoded = attributes["xmlEncoded"] {
-                isXMLEncoded = xmlEncoded == "true"
-            }
             localDelegate?.adParametersParsingContext(
                 self,
-                didParse: VAST.Element.AdParameters(
-                    content: content ?? behaviour.defaults.string,
-                    xmlEncoded: isXMLEncoded
+                didParse: VAST.Element.AdParameters.make(
+                    withDefaults: behaviour.defaults,
+                    content: content,
+                    xmlEncoded: attributes["xmlEncoded"].map { $0 == "true" }
                 )
             )
         }
@@ -92,5 +89,18 @@ public extension VAST.Parsing {
                 self.content = string.trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }
+    }
+}
+
+extension VAST.Element.AdParameters {
+    static func make(
+        withDefaults defaults: VAST.Parsing.DefaultConstants,
+        content: String? = nil,
+        xmlEncoded: Bool? = nil
+    ) -> VAST.Element.AdParameters {
+        VAST.Element.AdParameters(
+            content: content ?? defaults.string,
+            xmlEncoded: xmlEncoded
+        )
     }
 }
