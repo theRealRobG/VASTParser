@@ -74,6 +74,15 @@ class AnyParser<T>: NSObject, XMLParserDelegate {
                 delegate: self,
                 parentContext: self
             )
+        case .vastElementName.executableResource:
+            currentParsingContext = VAST.Parsing.ExecutableResourceParsingContext(
+                xmlParser: parser,
+                attributes: attributeDict,
+                errorLog: errorLog,
+                behaviour: behaviour,
+                delegate: self,
+                parentContext: self
+            )
         default:
             break
         }

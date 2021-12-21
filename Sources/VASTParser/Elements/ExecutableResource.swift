@@ -1,7 +1,7 @@
 public extension VAST.Element {
     /// A reference to a non-JavaScript or custom-integration resource intended for collecting verification data via
     /// the listed apiFramework.
-    struct ExecutableResource {
+    struct ExecutableResource: Equatable {
         /// A CDATA-wrapped reference to the resource. This may be a URI, but depending on the execution environment can
         /// be any value which enables the player to load the required verification code.
         public let content: String

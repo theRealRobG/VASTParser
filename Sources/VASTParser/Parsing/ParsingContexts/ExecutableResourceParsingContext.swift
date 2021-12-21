@@ -1,17 +1,17 @@
 import Foundation
 
-public protocol JavaScriptResourceParsingContextDelegate: AnyObject {
-    func javaScriptResourceParsingContext(
-        _ parsingContext: VAST.Parsing.JavaScriptResourceParsingContext,
-        didParse parsedContent: VAST.Element.JavaScriptResource
+public protocol ExecutableResourceParsingContextDelegate: AnyObject {
+    func executableResourceParsingContext(
+        _ parsingContext: VAST.Parsing.ExecutableResourceParsingContext,
+        didParse parsedContent: VAST.Element.ExecutableResource
     )
 }
 
 public extension VAST.Parsing {
-    class JavaScriptResourceParsingContext: AnyParsingContext {
-        private var content: URL?
-        private var localDelegate: JavaScriptResourceParsingContextDelegate? {
-            super.delegate as? JavaScriptResourceParsingContextDelegate
+    class ExecutableResourceParsingContext: AnyParsingContext {
+        private var content: String?
+        private var localDelegate: ExecutableResourceParsingContextDelegate? {
+            super.delegate as? ExecutableResourceParsingContextDelegate
         }
 
         public init(
@@ -19,12 +19,12 @@ public extension VAST.Parsing {
             attributes: [String: String],
             errorLog: ErrorLog,
             behaviour: Behaviour,
-            delegate: JavaScriptResourceParsingContextDelegate,
+            delegate: ExecutableResourceParsingContextDelegate,
             parentContext: XMLParserDelegate?
         ) {
             super.init(
                 xmlParser: xmlParser,
-                elementName: .vastElementName.javaScriptResource,
+                elementName: .vastElementName.executableResource,
                 attributes: attributes,
                 expectedElementNames: .some([]),
                 errorLog: errorLog,
@@ -45,39 +45,39 @@ public extension VAST.Parsing {
             if apiFramework == nil {
                 try missingConstant("apiFramework")
             }
-            let browserOptional = attributes["browserOptional"]
-            if browserOptional == nil {
-                try missingConstant("browserOptional")
+            let type = attributes["type"]
+            if type == nil {
+                try missingConstant("type")
             }
-            localDelegate?.javaScriptResourceParsingContext(
+            localDelegate?.executableResourceParsingContext(
                 self,
-                didParse: VAST.Element.JavaScriptResource.make(
+                didParse: VAST.Element.ExecutableResource.make(
                     withDefaults: behaviour.defaults,
                     content: content,
                     apiFramework: apiFramework,
-                    browserOptional: browserOptional == "true"
+                    type: type
                 )
             )
         }
 
         @objc
         public func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
-            content = String(data: CDATABlock, encoding: .utf8).flatMap { URL(string: $0) }
+            content = String(data: CDATABlock, encoding: .utf8)
         }
     }
 }
 
-extension VAST.Element.JavaScriptResource {
+extension VAST.Element.ExecutableResource {
     static func make(
         withDefaults defaults: VAST.Parsing.DefaultConstants,
-        content: URL? = nil,
+        content: String? = nil,
         apiFramework: String? = nil,
-        browserOptional: Bool = false
-    ) -> VAST.Element.JavaScriptResource {
-        VAST.Element.JavaScriptResource(
-            content: content ?? defaults.url,
+        type: String? = nil
+    ) -> VAST.Element.ExecutableResource {
+        VAST.Element.ExecutableResource(
+            content: content ?? defaults.string,
             apiFramework: apiFramework ?? defaults.string,
-            browserOptional: browserOptional
+            type: type ?? defaults.string
         )
     }
 }
