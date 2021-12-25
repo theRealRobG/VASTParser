@@ -111,6 +111,15 @@ class AnyParser<T>: NSObject, XMLParserDelegate {
                     parentContext: self
                 )
             }
+        case .vastElementName.advertiser:
+            currentParsingContext = VAST.Parsing.AdvertiserParsingContext(
+                xmlParser: parser,
+                attributes: attributeDict,
+                errorLog: errorLog,
+                behaviour: behaviour,
+                delegate: self,
+                parentContext: self
+            )
         default:
             break
         }
