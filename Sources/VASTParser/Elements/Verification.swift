@@ -10,7 +10,10 @@ public extension VAST.Element {
     /// If the player is willing and able to run one of these resources, it should execute them BEFORE creative
     /// playback begins. Otherwise, if no resource can be executed, any appropriate tracking events listed under the
     /// `<Verification>` element must be fired.
-    struct Verification {
+    struct Verification: Equatable {
+        /// An identifier for the verification vendor. The recommended format is [domain]- [useCase], to avoid name
+        /// collisions. For example, "company.com-omid".
+        public let vendor: String
         /// A container for the URI to the JavaScript file used to collect verification data.
         ///
         /// Some verification vendors may provide JavaScript executables which work in non-browser environments, for
@@ -29,7 +32,7 @@ public extension VAST.Element {
         public let executableResource: [ExecutableResource]
         /// The verification vendor may provide URIs for tracking events relating to the execution of their code during
         /// the ad session.
-        public let trackingEvents: TrackingEvents?
+        public let trackingEvents: TrackingEvents
         /// CDATA-wrapped metadata string for the verification executable.
         ///
         /// `<VerificationParameters>` contains a CDATA-wrapped string intended for bootstrapping the verification code
@@ -38,11 +41,13 @@ public extension VAST.Element {
         public let verificationParameters: VerificationParameters?
 
         public init(
+            vendor: String,
             javaScriptResource: [JavaScriptResource],
             executableResource: [ExecutableResource],
-            trackingEvents: TrackingEvents?,
+            trackingEvents: TrackingEvents,
             verificiationParameters: VerificationParameters?
         ) {
+            self.vendor = vendor
             self.javaScriptResource = javaScriptResource
             self.executableResource = executableResource
             self.trackingEvents = trackingEvents
@@ -54,23 +59,18 @@ public extension VAST.Element {
 public extension VAST.Element.Verification {
     /// The verification vendor may provide URIs for tracking events relating to the execution of their code during
     /// the ad session.
-    struct TrackingEvents {
-        /// Each `<Tracking>` element is used to define a single event to be tracked by the verification vendor.
-        /// Multiple tracking elements may be used to define multiple events to be tracked, but may also be used to
-        /// track events of the same type for multiple parties.
-        public let tracking: [Tracking]
-
-        public init(tracking: [Tracking]) {
-            self.tracking = tracking
-        }
-    }
+    ///
+    /// Each `<Tracking>` element is used to define a single event to be tracked by the verification vendor.
+    /// Multiple tracking elements may be used to define multiple events to be tracked, but may also be used to
+    /// track events of the same type for multiple parties.
+    typealias TrackingEvents = [Tracking]
 
     /// Each `<Tracking>` element is used to define a single event to be tracked by the verification vendor.
     /// Multiple tracking elements may be used to define multiple events to be tracked, but may also be used to
     /// track events of the same type for multiple parties.
-    struct Tracking {
+    struct Tracking: Equatable {
         /// A URI to the tracking resource for the event specified using the event attribute.
-        public let content: URL
+        public let url: URL
         /// A string that defines the event being tracked.
         ///
         /// One event type is currently supported:
@@ -89,8 +89,8 @@ public extension VAST.Element.Verification {
         ///      *undetectable errors*: parsing or runtime errors in the JS resource.
         public let event: Event
 
-        public init(content: URL, event: Event) {
-            self.content = content
+        public init(url: URL, event: Event) {
+            self.url = url
             self.event = event
         }
     }
@@ -113,7 +113,7 @@ public extension VAST.Element.Verification.Tracking {
     ///      some error occurred that the player/SDK was able to detect. *Examples of detectable errors*: malformed
     ///      resource URLs, 404 or other failed response codes, request time out. *Examples of potentially*
     ///      *undetectable errors*: parsing or runtime errors in the JS resource.
-    enum Event: RawRepresentable {
+    enum Event: RawRepresentable, Equatable {
         case verificationNotExecuted
         case unknown(String)
 

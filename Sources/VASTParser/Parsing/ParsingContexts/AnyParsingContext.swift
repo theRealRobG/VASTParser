@@ -85,7 +85,7 @@ extension VAST.Parsing {
                 unexpectedElementNames.append(elementName)
                 return
             }
-            self.parser(parser, didStartElement: elementName, attributes: attributes)
+            self.parser(parser, didStartElement: elementName, attributes: attributeDict)
         }
 
         public func parser(

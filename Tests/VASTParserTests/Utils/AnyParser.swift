@@ -83,6 +83,34 @@ class AnyParser<T>: NSObject, XMLParserDelegate {
                 delegate: self,
                 parentContext: self
             )
+        case .vastElementName.verification:
+            currentParsingContext = VAST.Parsing.VerificationParsingContext(
+                xmlParser: parser,
+                attributes: attributeDict,
+                errorLog: errorLog,
+                behaviour: behaviour,
+                delegate: self,
+                parentContext: self
+            )
+        case .vastElementName.verificationParameters:
+            currentParsingContext = VAST.Parsing.CDATAContentParsingContext(
+                xmlParser: parser,
+                elementName: elementName,
+                errorLog: errorLog,
+                behaviour: behaviour,
+                delegate: self,
+                parentContext: self
+            )
+        case .vastElementName.trackingEvents:
+            if T.self is VAST.Element.Verification.TrackingEvents.Type {
+                currentParsingContext = VAST.Parsing.Verification.TrackingEventsParsingContext(
+                    xmlParser: parser,
+                    errorLog: errorLog,
+                    behaviour: behaviour,
+                    delegate: self,
+                    parentContext: self
+                )
+            }
         default:
             break
         }
