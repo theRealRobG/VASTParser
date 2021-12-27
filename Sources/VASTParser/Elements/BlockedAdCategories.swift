@@ -7,7 +7,7 @@ public extension VAST.Element {
     /// player to reject InLine ads with Category fields that violate the BlockedAdCategories fields of upstream
     /// wrappers. If an InLine ad is skipped due to a category violation, the client must notify the ad server using
     /// the `<Error>` URI, if provided (error code 205), and move on to the next option.
-    struct BlockedAdCategories {
+    struct BlockedAdCategories: Equatable {
         /// A string that provides a comma separated list of category codes or labels per authority that identify the ad
         /// content.
         public let content: String

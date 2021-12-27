@@ -120,6 +120,15 @@ class AnyParser<T>: NSObject, XMLParserDelegate {
                 delegate: self,
                 parentContext: self
             )
+        case .vastElementName.blockedAdCategories:
+            currentParsingContext = VAST.Parsing.BlockedAdCategoriesParsingContext(
+                xmlParser: parser,
+                attributes: attributeDict,
+                errorLog: errorLog,
+                behaviour: behaviour,
+                delegate: self,
+                parentContext: self
+            )
         default:
             break
         }
