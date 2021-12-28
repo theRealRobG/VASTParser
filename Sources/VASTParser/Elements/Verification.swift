@@ -45,13 +45,13 @@ public extension VAST.Element {
             javaScriptResource: [JavaScriptResource],
             executableResource: [ExecutableResource],
             trackingEvents: TrackingEvents,
-            verificiationParameters: VerificationParameters?
+            verificationParameters: VerificationParameters?
         ) {
             self.vendor = vendor
             self.javaScriptResource = javaScriptResource
             self.executableResource = executableResource
             self.trackingEvents = trackingEvents
-            self.verificationParameters = verificiationParameters
+            self.verificationParameters = verificationParameters
         }
     }
 }

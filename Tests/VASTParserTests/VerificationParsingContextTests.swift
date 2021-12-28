@@ -46,7 +46,7 @@ class VerificationParsingContextTests: XCTestCase {
                 ],
                 executableResource: [],
                 trackingEvents: [],
-                verificiationParameters: "{\"expectedKey\":\"663501\"}"
+                verificationParameters: "{\"expectedKey\":\"663501\"}"
             )
         )
     }
@@ -69,7 +69,7 @@ class VerificationParsingContextTests: XCTestCase {
                 javaScriptResource: [],
                 executableResource: [],
                 trackingEvents: [],
-                verificiationParameters: nil
+                verificationParameters: nil
             )
         )
     }

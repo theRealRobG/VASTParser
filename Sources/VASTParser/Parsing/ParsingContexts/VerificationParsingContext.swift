@@ -67,7 +67,7 @@ public extension VAST.Parsing {
                     javaScriptResource: javaScriptResource,
                     executableResource: executableResource,
                     trackingEvents: trackingEvents,
-                    verificiationParameters: verificationParameters
+                    verificationParameters: verificationParameters
                 )
             )
         }
@@ -172,14 +172,14 @@ extension VAST.Element.Verification {
         javaScriptResource: [VAST.Element.JavaScriptResource] = [],
         executableResource: [VAST.Element.ExecutableResource] = [],
         trackingEvents: TrackingEvents = [],
-        verificiationParameters: VAST.Element.VerificationParameters? = nil
+        verificationParameters: VAST.Element.VerificationParameters? = nil
     ) -> VAST.Element.Verification {
         VAST.Element.Verification(
             vendor: vendor ?? defaults.string,
             javaScriptResource: javaScriptResource,
             executableResource: executableResource,
             trackingEvents: trackingEvents,
-            verificiationParameters: verificiationParameters
+            verificationParameters: verificationParameters
         )
     }
 }
