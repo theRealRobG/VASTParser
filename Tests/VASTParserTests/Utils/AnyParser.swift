@@ -138,6 +138,15 @@ class AnyParser<T>: NSObject, XMLParserDelegate {
                 delegate: self,
                 parentContext: self
             )
+        case .vastElementName.clickThrough:
+            currentParsingContext = VAST.Parsing.ClickThroughParsingContext(
+                xmlParser: parser,
+                attributes: attributeDict,
+                errorLog: errorLog,
+                behaviour: behaviour,
+                delegate: self,
+                parentContext: self
+            )
         default:
             break
         }
