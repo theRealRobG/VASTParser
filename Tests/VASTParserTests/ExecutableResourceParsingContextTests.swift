@@ -19,23 +19,10 @@ private let resourceDefaultValues = """
 <ExecutableResource></ExecutableResource>
 """
 
-extension AnyParser: ExecutableResourceParsingContextDelegate {
-    func executableResourceParsingContext(
-        _ parsingContext: VAST.Parsing.ExecutableResourceParsingContext,
-        didParse parsedContent: VAST.Element.ExecutableResource
-    ) {
-        guard parsingContext === currentParsingContext else { return }
-        if let element = parsedContent as? T {
-            self.element = element
-        }
-        currentParsingContext = nil
-    }
-}
-
 class ExecutableResourceParsingContextTests: XCTestCase {
     func test_resourceTypeSwift() throws {
         try XCTAssertEqual(
-            AnyParser().parse(resourceTypeSwift),
+            VAST.Parsing.AnyElementParser.loose().parse(resourceTypeSwift),
             VAST.Element.ExecutableResource(
                 content: "XCTAssertTrue(true)",
                 apiFramework: "XCTest",
@@ -45,7 +32,7 @@ class ExecutableResourceParsingContextTests: XCTestCase {
     }
 
     func test_resourceTypeJS() throws {
-        let resource = try AnyParser<VAST.Element.ExecutableResource>().parse(resourceTypeJS)
+        let resource = try VAST.Parsing.AnyElementParser<VAST.Element.ExecutableResource>.loose().parse(resourceTypeJS)
         XCTAssertEqual(resource.apiFramework, "random")
         XCTAssertEqual(resource.type, "JS")
         let lines = resource.content
@@ -60,7 +47,7 @@ class ExecutableResourceParsingContextTests: XCTestCase {
     func test_resourceDefaultValues() throws {
         let defaults = VAST.Parsing.DefaultConstants(string: "some_default_string")
         try XCTAssertEqual(
-            AnyParser(
+            VAST.Parsing.AnyElementParser(
                 behaviour: VAST.Parsing.Behaviour(
                     defaults: defaults,
                     strictness: .loose

@@ -33,23 +33,10 @@ private let trackingEventsDefaultValuesWithWhitespaceExample = """
 </TrackingEvents>
 """
 
-extension AnyParser: VerificationTrackingEventsParsingContextDelegate {
-    func trackingEventsParsingContext(
-        _ parsingContext: VAST.Parsing.Verification.TrackingEventsParsingContext,
-        didParse parsedContent: [VAST.Element.Verification.Tracking]
-    ) {
-        guard parsingContext === currentParsingContext else { return }
-        if let element = parsedContent as? T {
-            self.element = element
-        }
-        currentParsingContext = nil
-    }
-}
-
 class VerificationTrackingEventsParsingContextTests: XCTestCase {
     func test_trackingEventsExample() {
         try XCTAssertEqual(
-            AnyParser().parse(trackingEventsExample),
+            VAST.Parsing.AnyElementParser.loose().parse(trackingEventsExample),
             [
                 VAST.Element.Verification.Tracking(
                     url: URL(string: "https://example.com/verification?swift=true")!,
@@ -65,7 +52,7 @@ class VerificationTrackingEventsParsingContextTests: XCTestCase {
 
     func test_trackingEventsUnknownEventExample() {
         try XCTAssertEqual(
-            AnyParser().parse(trackingEventsUnknownEventExample),
+            VAST.Parsing.AnyElementParser.loose().parse(trackingEventsUnknownEventExample),
             [
                 VAST.Element.Verification.Tracking(
                     url: URL(string: "https://example.com/verification?swift=true")!,
@@ -81,7 +68,7 @@ class VerificationTrackingEventsParsingContextTests: XCTestCase {
 
     func test_trackingEventsDefaultValuesExample() {
         try XCTAssertEqual(
-            AnyParser(
+            VAST.Parsing.AnyElementParser(
                 behaviour: VAST.Parsing.Behaviour(
                     defaults: VAST.Parsing.DefaultConstants(
                         string: "TEST_STRING",
@@ -105,7 +92,7 @@ class VerificationTrackingEventsParsingContextTests: XCTestCase {
 
     func test_trackingEventsDefaultValuesWithWhitespaceExample() {
         try XCTAssertEqual(
-            AnyParser(
+            VAST.Parsing.AnyElementParser(
                 behaviour: VAST.Parsing.Behaviour(
                     defaults: VAST.Parsing.DefaultConstants(
                         string: "TEST_STRING",

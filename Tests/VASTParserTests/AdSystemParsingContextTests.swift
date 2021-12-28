@@ -13,28 +13,19 @@ private let adSystemDefaults = """
 </AdSystem>
 """
 
-extension AnyParser: AdSystemParsingContextDelegate {
-    func adSystemParsingContext(
-        _ parsingContext: VAST.Parsing.AdSystemParsingContext,
-        didParse adSystem: VAST.Element.AdSystem
-    ) {
-        guard currentParsingContext === parsingContext else { return }
-        if let element = adSystem as? T {
-            self.element = element
-        }
-        currentParsingContext = nil
-    }
-}
-
 class AdSystemParsingContextTests: XCTestCase {
     func test_parse_adSystemNoVersion() throws {
-        let params = try AnyParser<VAST.Element.AdSystem>().parse(adSystemNoVersion)
-        XCTAssertEqual(params, VAST.Element.AdSystem(content: "theRealRobG", version: nil))
+        try XCTAssertEqual(
+            VAST.Parsing.AnyElementParser().parse(adSystemNoVersion),
+            VAST.Element.AdSystem(content: "theRealRobG", version: nil)
+        )
     }
 
     func test_parse_adSystemWithVersion() throws {
-        let params = try AnyParser<VAST.Element.AdSystem>().parse(adSystemWithVersion)
-        XCTAssertEqual(params, VAST.Element.AdSystem(content: "Amazing Ads", version: "1.2.3"))
+        try XCTAssertEqual(
+            VAST.Parsing.AnyElementParser().parse(adSystemWithVersion),
+            VAST.Element.AdSystem(content: "Amazing Ads", version: "1.2.3")
+        )
     }
 
     func test_parse_adSystemDefaults() throws {
@@ -44,7 +35,7 @@ class AdSystemParsingContextTests: XCTestCase {
             strictness: .loose
         )
         try XCTAssertEqual(
-            AnyParser(behaviour: behaviour).parse(adSystemDefaults),
+            VAST.Parsing.AnyElementParser(behaviour: behaviour).parse(adSystemDefaults),
             VAST.Element.AdSystem(content: expectedContent, version: nil)
         )
     }

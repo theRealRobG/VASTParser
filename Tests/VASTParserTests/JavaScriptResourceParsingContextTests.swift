@@ -16,23 +16,10 @@ private let resourceBrowserOptionalDefaultValues = """
 <JavaScriptResource></JavaScriptResource>
 """
 
-extension AnyParser: JavaScriptResourceParsingContextDelegate {
-    func javaScriptResourceParsingContext(
-        _ parsingContext: VAST.Parsing.JavaScriptResourceParsingContext,
-        didParse parsedContent: VAST.Element.JavaScriptResource
-    ) {
-        guard parsingContext === currentParsingContext else { return }
-        if let element = parsedContent as? T {
-            self.element = element
-        }
-        currentParsingContext = nil
-    }
-}
-
 class JavaScriptResourceParsingContextTests: XCTestCase {
     func test_resourceBrowserOptionalTrue() throws {
         try XCTAssertEqual(
-            AnyParser().parse(resourceBrowserOptionalTrue),
+            VAST.Parsing.AnyElementParser.loose().parse(resourceBrowserOptionalTrue),
             VAST.Element.JavaScriptResource(
                 content: URL(string: "https://verificationvendor.com/omid.js")!,
                 apiFramework: "omid",
@@ -43,7 +30,7 @@ class JavaScriptResourceParsingContextTests: XCTestCase {
 
     func test_resourceBrowserOptionalFalse() throws {
         try XCTAssertEqual(
-            AnyParser().parse(resourceBrowserOptionalFalse),
+            VAST.Parsing.AnyElementParser.loose().parse(resourceBrowserOptionalFalse),
             VAST.Element.JavaScriptResource(
                 content: URL(string: "https://verificationvendor.com/theRealRobG.js")!,
                 apiFramework: "theRealRobG",
@@ -58,7 +45,7 @@ class JavaScriptResourceParsingContextTests: XCTestCase {
             url: URL(string: "https://some.test.verification/test.js")!
         )
         try XCTAssertEqual(
-            AnyParser(
+            VAST.Parsing.AnyElementParser(
                 behaviour: VAST.Parsing.Behaviour(
                     defaults: defaults,
                     strictness: .loose

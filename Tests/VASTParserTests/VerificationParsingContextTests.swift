@@ -18,23 +18,10 @@ private let verificationDefaultExample = """
 <Verification></Verification>
 """
 
-extension AnyParser: VerificationParsingContextDelegate {
-    func verificationParsingContext(
-        _ parsingContext: VAST.Parsing.VerificationParsingContext,
-        didParse parsedContent: VAST.Element.Verification
-    ) {
-        guard parsingContext === currentParsingContext else { return }
-        if let element = parsedContent as? T {
-            self.element = element
-        }
-        currentParsingContext = nil
-    }
-}
-
 class VerificationParsingContextTests: XCTestCase {
     func test_verifciationExample() {
         try XCTAssertEqual(
-            AnyParser().parse(verificationExample),
+            VAST.Parsing.AnyElementParser.loose().parse(verificationExample),
             VAST.Element.Verification(
                 vendor: "expectedVendor",
                 javaScriptResource: [
@@ -55,7 +42,7 @@ class VerificationParsingContextTests: XCTestCase {
         let defaultString = "TEST_STRING"
         let defaultURL = URL(string: "https://test.com/test?fake=true")!
         try XCTAssertEqual(
-            AnyParser(
+            VAST.Parsing.AnyElementParser(
                 behaviour: VAST.Parsing.Behaviour(
                     defaults: VAST.Parsing.DefaultConstants(
                         string: defaultString,

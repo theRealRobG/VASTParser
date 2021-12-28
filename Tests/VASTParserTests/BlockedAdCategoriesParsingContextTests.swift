@@ -15,30 +15,17 @@ private let defaultsExample = """
 </BlockedAdCategories>
 """
 
-extension AnyParser: BlockedAdCategoriesParsingContextDelegate {
-    func blockedAdCategoriesParsingContext(
-        _ parsingContext: VAST.Parsing.BlockedAdCategoriesParsingContext,
-        didParse parsedContent: VAST.Element.BlockedAdCategories
-    ) {
-        guard currentParsingContext === parsingContext else { return }
-        if let element = parsedContent as? T {
-            self.element = element
-        }
-        currentParsingContext = nil
-    }
-}
-
 class BlockedAdCategoriesParsingContextTests: XCTestCase {
     func test_noAuthorityExample() throws {
         try XCTAssertEqual(
-            AnyParser().parse(noAuthorityExample),
+            VAST.Parsing.AnyElementParser.loose().parse(noAuthorityExample),
             VAST.Element.BlockedAdCategories(content: "Example", authority: nil)
         )
     }
 
     func test_authorityExample() throws {
         try XCTAssertEqual(
-            AnyParser().parse(authorityExample),
+            VAST.Parsing.AnyElementParser.loose().parse(authorityExample),
             VAST.Element.BlockedAdCategories(content: "232", authority: URL(string: "iabtechlab.com")!)
         )
     }
@@ -50,7 +37,7 @@ class BlockedAdCategoriesParsingContextTests: XCTestCase {
             strictness: .loose
         )
         try XCTAssertEqual(
-            AnyParser(behaviour: behaviour).parse(defaultsExample),
+            VAST.Parsing.AnyElementParser(behaviour: behaviour).parse(defaultsExample),
             VAST.Element.BlockedAdCategories(content: expectedDefaultContent, authority: nil)
         )
     }

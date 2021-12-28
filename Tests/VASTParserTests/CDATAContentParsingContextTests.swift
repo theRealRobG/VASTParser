@@ -6,20 +6,6 @@ private let verificationParametersExample = """
 <VerificationParameters><![CDATA[param=test]]></VerificationParameters>
 """
 
-extension AnyParser: CDATAContentParsingContextDelegate {
-    func cdataContentParsingContext(
-        _ parsingContext: VAST.Parsing.CDATAContentParsingContext,
-        didParse content: Data,
-        fromElementName elementName: String
-    ) {
-        guard parsingContext === currentParsingContext else { return }
-        if let element = content as? T {
-            self.element = element
-        }
-        currentParsingContext = nil
-    }
-}
-
 private class MockCDATAContentParsingContextDelegate: CDATAContentParsingContextDelegate {
     var didParseListener: ((VAST.Parsing.CDATAContentParsingContext, Data, String) -> Void)?
 
@@ -103,6 +89,9 @@ class CDATAContentParsingContextTests: XCTestCase {
     }
 
     func test_verificationParametersExample() {
-        try XCTAssertEqual(AnyParser().parse(verificationParametersExample), "param=test".data(using: .utf8)!)
+        try XCTAssertEqual(
+            VAST.Parsing.AnyElementParser.loose().parse(verificationParametersExample),
+            "param=test".data(using: .utf8)!
+        )
     }
 }

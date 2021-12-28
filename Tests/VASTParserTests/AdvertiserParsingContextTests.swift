@@ -16,23 +16,10 @@ private let advertiserDefaultWithWhitespaceExample = """
 </Advertiser>
 """
 
-extension AnyParser: AdvertiserParsingContextDelegate {
-    func advertiserParsingContext(
-        _ parsingContext: VAST.Parsing.AdvertiserParsingContext,
-        parsedContent: VAST.Element.Advertiser
-    ) {
-        guard parsingContext === currentParsingContext else { return }
-        if let element = parsedContent as? T {
-            self.element = element
-        }
-        currentParsingContext = nil
-    }
-}
-
 class AdvertiserPasrsingContextTests: XCTestCase {
     func test_advertiserExample() {
         try XCTAssertEqual(
-            AnyParser().parse(advertiserExample),
+            VAST.Parsing.AnyElementParser.loose().parse(advertiserExample),
             VAST.Element.Advertiser(
                 id: nil,
                 content: "Rob G Advertising Inc."
@@ -42,7 +29,7 @@ class AdvertiserPasrsingContextTests: XCTestCase {
 
     func test_advertiserWithIdExample() {
         try XCTAssertEqual(
-            AnyParser().parse(advertiserWithIdExample),
+            VAST.Parsing.AnyElementParser.loose().parse(advertiserWithIdExample),
             VAST.Element.Advertiser(
                 id: "1234abcd",
                 content: "Super Advertising Plc."
@@ -53,7 +40,7 @@ class AdvertiserPasrsingContextTests: XCTestCase {
     func test_advertiserDefaultExample() {
         let expectedString = "TEST_ADVERTISER"
         try XCTAssertEqual(
-            AnyParser(
+            VAST.Parsing.AnyElementParser(
                 behaviour: VAST.Parsing.Behaviour(
                     defaults: VAST.Parsing.DefaultConstants(string: expectedString),
                     strictness: .loose
@@ -73,7 +60,7 @@ class AdvertiserPasrsingContextTests: XCTestCase {
             strictness: .loose
         )
         try XCTAssertEqual(
-            AnyParser(behaviour: behaviour).parse(advertiserDefaultWithWhitespaceExample),
+            VAST.Parsing.AnyElementParser(behaviour: behaviour).parse(advertiserDefaultWithWhitespaceExample),
             VAST.Element.Advertiser(id: nil, content: expectedString)
         )
     }

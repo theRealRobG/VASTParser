@@ -15,30 +15,17 @@ private let defaultsExample = """
 </Category>
 """
 
-extension AnyParser: CategoryParsingContextDelegate {
-    func categoryParsingContext(
-        _ parsingContext: VAST.Parsing.CategoryParsingContext,
-        didParse parsedContent: VAST.Element.Category
-    ) {
-        guard currentParsingContext === parsingContext else { return }
-        if let element = parsedContent as? T {
-            self.element = element
-        }
-        currentParsingContext = nil
-    }
-}
-
 class CategoryParsingContextTests: XCTestCase {
     func test_noAuthorityExample() throws {
         try XCTAssertEqual(
-            AnyParser().parse(noAuthorityExample),
+            VAST.Parsing.AnyElementParser.loose().parse(noAuthorityExample),
             VAST.Element.Category(authority: nil, content: "Example Category")
         )
     }
 
     func test_authorityExample() throws {
         try XCTAssertEqual(
-            AnyParser().parse(authorityExample),
+            VAST.Parsing.AnyElementParser.loose().parse(authorityExample),
             VAST.Element.Category(authority: URL(string: "iabtechlab.com")!, content: "232")
         )
     }
@@ -50,16 +37,18 @@ class CategoryParsingContextTests: XCTestCase {
             strictness: .loose
         )
         try XCTAssertEqual(
-            AnyParser(behaviour: behaviour).parse(defaultsExample),
+            VAST.Parsing.AnyElementParser(behaviour: behaviour).parse(defaultsExample),
             VAST.Element.Category(authority: nil, content: expectedContent)
         )
     }
 
     func test_defaultsExample_whenStrictParsing_shouldNotParse() throws {
-        let parser = AnyParser<VAST.Element.Category>(behaviour: VAST.Parsing.Behaviour(strictness: .strict))
+        let parser = VAST.Parsing.AnyElementParser<VAST.Element.Category>(
+            behaviour: VAST.Parsing.Behaviour(strictness: .strict)
+        )
         XCTAssertThrowsError(try parser.parse(defaultsExample)) { error in
             XCTAssertEqual(
-                (error as NSError).userInfo[anyParserErrorLogUserInfoKey] as? [VASTParsingError],
+                (error as NSError).userInfo[VAST.Parsing.anyElementParserErrorLogUserInfoKey] as? [VASTParsingError],
                 [
                     VASTParsingError.missingRequiredProperty(
                         parentElementName: .vastElementName.category,
