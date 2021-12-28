@@ -134,6 +134,15 @@ public extension VAST.Parsing {
                     delegate: self,
                     parentContext: self
                 )
+            case .vastElementName.clickTracking:
+                currentParsingContext = VAST.Parsing.ClickTrackingParsingContext(
+                    xmlParser: parser,
+                    attributes: attributeDict,
+                    errorLog: errorLog,
+                    behaviour: behaviour,
+                    delegate: self,
+                    parentContext: self
+                )
             case .vastElementName.executableResource:
                 currentParsingContext = VAST.Parsing.ExecutableResourceParsingContext(
                     xmlParser: parser,
