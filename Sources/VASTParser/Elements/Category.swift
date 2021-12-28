@@ -7,7 +7,7 @@ public extension VAST.Element {
     /// site content and ad content. For example, the category list used to comply with the IAB
     /// Quality Assurance Guidelines (QAG) describes site content, but is sometimes used to describe
     /// ad content.
-    struct Category {
+    struct Category: Equatable {
         /// A URL for the organizational authority that produced the list being used to identify ad content
         /// category.
         public let authority: URL?
