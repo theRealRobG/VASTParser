@@ -2,7 +2,7 @@ import Foundation
 
 public extension VAST.Element {
     /// Individual closed caption files for various languages.
-    struct ClosedCaptionFile {
+    struct ClosedCaptionFile: Equatable {
         /// A CDATA-wrapped URI to a file providing Closed Caption info for the media file.
         public let content: URL
         /// Identifies the MIME type of the file provided.

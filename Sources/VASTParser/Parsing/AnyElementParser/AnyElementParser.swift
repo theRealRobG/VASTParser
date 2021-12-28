@@ -143,6 +143,15 @@ public extension VAST.Parsing {
                     delegate: self,
                     parentContext: self
                 )
+            case .vastElementName.closedCaptionFile:
+                currentParsingContext = VAST.Parsing.ClosedCaptionFileParsingContext(
+                    xmlParser: parser,
+                    attributes: attributeDict,
+                    errorLog: errorLog,
+                    behaviour: behaviour,
+                    delegate: self,
+                    parentContext: self
+                )
             case .vastElementName.executableResource:
                 currentParsingContext = VAST.Parsing.ExecutableResourceParsingContext(
                     xmlParser: parser,
