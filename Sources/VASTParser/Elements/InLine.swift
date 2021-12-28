@@ -17,7 +17,7 @@ public extension VAST.Element {
         /// Wrapper responses preceding it should be triggered at the same time when the impression
         /// for the ad occurs, or as close in time as possible to when the impression occurs, to prevent
         /// impression-counting discrepancies.
-        public let impression: Impression
+        public let impression: [Impression]
         /// A unique or pseudo-unique (long enough to be unique when combined with timestamp data)
         /// GUID.
         ///
@@ -42,7 +42,7 @@ public extension VAST.Element {
         /// site content and ad content. For example, the category list used to comply with the IAB
         /// Quality Assurance Guidelines (QAG) describes site content, but is sometimes used to describe
         /// ad content.
-        public let category: Category?
+        public let category: [Category]
         /// A string that provides a long ad description
         ///
         /// When a longer description of the ad is needed, the `<Description>` element can be used.
@@ -64,7 +64,7 @@ public extension VAST.Element {
         /// collecting survey data. Publishers and any parties using the `<Survey>` element should
         /// determine how surveys are implemented and executed. Multiple survey elements may be
         /// provided.
-        public let survey: Survey?
+        public let survey: [Survey]
         /// A URI supplied by the ad server and used to report the no ad response.
         ///
         /// The `<Error>` element contains a URI that the player uses to notify the ad server when
@@ -74,7 +74,7 @@ public extension VAST.Element {
         /// If no specific error can be found, error `900` may be used to indicate an undefined error;
         /// however, every attempt should be made to provide an error code that maps to the error that
         /// occurred. The `<Error>` element is available for both the `InLine` or `Wrapper` elements.
-        public let error: Error?
+        public let error: [Error]
         /// Ad servers can use this XML node for custom extensions of VAST. When used, custom XML
         /// should fall under the nested `<Extension>` (singular) element so that custom XML can be
         /// separated from VAST elements. An XML namespace (xmlns) should also be used for the
@@ -110,15 +110,15 @@ public extension VAST.Element {
         public init(
             adSystem: AdSystem,
             adTitle: AdTitle,
-            impression: Impression,
+            impression: [Impression],
             adServingId: AdServingId,
             creatives: Creatives,
-            category: Category?,
+            category: [Category],
             description: Description?,
             advertiser: Advertiser?,
             pricing: Pricing?,
-            survey: Survey?,
-            error: Error?,
+            survey: [Survey],
+            error: [Error],
             extensions: Extensions?,
             viewableImpression: ViewableImpression?,
             adVerifications: AdVerifications?,

@@ -169,6 +169,15 @@ public extension VAST.Parsing {
                     delegate: self,
                     parentContext: self
                 )
+            case .vastElementName.impression:
+                currentParsingContext = VAST.Parsing.ImpressionParsingContext(
+                    xmlParser: parser,
+                    attributes: attributeDict,
+                    errorLog: errorLog,
+                    behaviour: behaviour,
+                    delegate: self,
+                    parentContext: self
+                )
             case .vastElementName.javaScriptResource:
                 currentParsingContext = VAST.Parsing.JavaScriptResourceParsingContext(
                     xmlParser: parser,
