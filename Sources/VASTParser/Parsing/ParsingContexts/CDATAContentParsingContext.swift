@@ -3,7 +3,7 @@ import Foundation
 public protocol CDATAContentParsingContextDelegate: AnyObject {
     func cdataContentParsingContext(
         _ parsingContext: VAST.Parsing.CDATAContentParsingContext,
-        didParse content: Data,
+        didParse parsedContent: Data,
         fromElementName elementName: String
     )
 }

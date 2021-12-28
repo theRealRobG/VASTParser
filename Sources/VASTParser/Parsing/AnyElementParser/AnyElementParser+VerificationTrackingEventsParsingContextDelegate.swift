@@ -3,7 +3,7 @@ extension VAST.Parsing.AnyElementParser: VerificationTrackingEventsParsingContex
         _ parsingContext: VAST.Parsing.Verification.TrackingEventsParsingContext,
         didParse parsedContent: [VAST.Element.Verification.Tracking]
     ) {
-        guard parsingContext === currentParsingContext else { return }
+        guard currentParsingContext === parsingContext else { return }
         if let element = parsedContent as? T {
             self.element = element
         }

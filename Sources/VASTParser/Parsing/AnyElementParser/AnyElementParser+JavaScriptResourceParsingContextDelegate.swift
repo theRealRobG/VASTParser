@@ -3,7 +3,7 @@ extension VAST.Parsing.AnyElementParser: JavaScriptResourceParsingContextDelegat
         _ parsingContext: VAST.Parsing.JavaScriptResourceParsingContext,
         didParse parsedContent: VAST.Element.JavaScriptResource
     ) {
-        guard parsingContext === currentParsingContext else { return }
+        guard currentParsingContext === parsingContext else { return }
         if let element = parsedContent as? T {
             self.element = element
         }

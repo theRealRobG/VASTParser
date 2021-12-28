@@ -3,7 +3,7 @@ import Foundation
 public protocol AdvertiserParsingContextDelegate: AnyObject {
     func advertiserParsingContext(
         _ parsingContext: VAST.Parsing.AdvertiserParsingContext,
-        parsedContent: VAST.Element.Advertiser
+        didParse parsedContent: VAST.Element.Advertiser
     )
 }
 
@@ -43,7 +43,7 @@ public extension VAST.Parsing {
             }
             localDelegate?.advertiserParsingContext(
                 self,
-                parsedContent: VAST.Element.Advertiser.make(
+                didParse: VAST.Element.Advertiser.make(
                     withDefaults: behaviour.defaults,
                     id: attributes["id"],
                     content: content

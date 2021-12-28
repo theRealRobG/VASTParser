@@ -3,7 +3,7 @@ extension VAST.Parsing.AnyElementParser: ExecutableResourceParsingContextDelegat
         _ parsingContext: VAST.Parsing.ExecutableResourceParsingContext,
         didParse parsedContent: VAST.Element.ExecutableResource
     ) {
-        guard parsingContext === currentParsingContext else { return }
+        guard currentParsingContext === parsingContext else { return }
         if let element = parsedContent as? T {
             self.element = element
         }

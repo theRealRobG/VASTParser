@@ -3,7 +3,7 @@ import Foundation
 public protocol AdSystemParsingContextDelegate: AnyObject {
     func adSystemParsingContext(
         _ parsingContext: VAST.Parsing.AdSystemParsingContext,
-        didParse adSystem: VAST.Element.AdSystem
+        didParse parsedContent: VAST.Element.AdSystem
     )
 }
 

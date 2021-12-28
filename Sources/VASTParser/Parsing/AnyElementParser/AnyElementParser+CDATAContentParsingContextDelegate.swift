@@ -3,11 +3,11 @@ import Foundation
 extension VAST.Parsing.AnyElementParser: CDATAContentParsingContextDelegate {
     public func cdataContentParsingContext(
         _ parsingContext: VAST.Parsing.CDATAContentParsingContext,
-        didParse content: Data,
+        didParse parsedContent: Data,
         fromElementName elementName: String
     ) {
-        guard parsingContext === currentParsingContext else { return }
-        if let element = content as? T {
+        guard currentParsingContext === parsingContext else { return }
+        if let element = parsedContent as? T {
             self.element = element
         }
         currentParsingContext = nil
