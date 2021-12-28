@@ -61,8 +61,9 @@ public extension VAST.Parsing {
             }
             localDelegate?.verificationParsingContext(
                 self,
-                didParse: VAST.Element.Verification(
-                    vendor: vendor ?? behaviour.defaults.string,
+                didParse: VAST.Element.Verification.make(
+                    withDefaults: behaviour.defaults,
+                    vendor: vendor,
                     javaScriptResource: javaScriptResource,
                     executableResource: executableResource,
                     trackingEvents: trackingEvents,
@@ -161,5 +162,24 @@ extension VAST.Parsing.VerificationParsingContext: CDATAContentParsingContextDel
         guard currentCDATAParsingContext === parsingContext else { return }
         verificationParameters = String(data: content, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
         currentCDATAParsingContext = nil
+    }
+}
+
+extension VAST.Element.Verification {
+    static func make(
+        withDefaults defaults: VAST.Parsing.DefaultConstants,
+        vendor: String? = nil,
+        javaScriptResource: [VAST.Element.JavaScriptResource] = [],
+        executableResource: [VAST.Element.ExecutableResource] = [],
+        trackingEvents: TrackingEvents = [],
+        verificiationParameters: VAST.Element.VerificationParameters? = nil
+    ) -> VAST.Element.Verification {
+        VAST.Element.Verification(
+            vendor: vendor ?? defaults.string,
+            javaScriptResource: javaScriptResource,
+            executableResource: executableResource,
+            trackingEvents: trackingEvents,
+            verificiationParameters: verificiationParameters
+        )
     }
 }

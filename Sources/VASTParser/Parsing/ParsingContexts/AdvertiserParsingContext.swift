@@ -43,15 +43,29 @@ public extension VAST.Parsing {
             }
             localDelegate?.advertiserParsingContext(
                 self,
-                parsedContent: VAST.Element.Advertiser(
+                parsedContent: VAST.Element.Advertiser.make(
+                    withDefaults: behaviour.defaults,
                     id: attributes["id"],
-                    content: content ?? behaviour.defaults.string
+                    content: content
                 )
             )
         }
 
         public func parser(_ parser: XMLParser, foundCharacters string: String) {
-            content = (content ?? "") + string.trimmingCharacters(in: .whitespacesAndNewlines)
+            content = getStringFromFoundCharacters(string, existingContent: content)
         }
+    }
+}
+
+extension VAST.Element.Advertiser {
+    static func make(
+        withDefaults defaults: VAST.Parsing.DefaultConstants,
+        id: String? = nil,
+        content: String? = nil
+    ) -> VAST.Element.Advertiser {
+        VAST.Element.Advertiser(
+            id: id,
+            content: content ?? defaults.string
+        )
     }
 }

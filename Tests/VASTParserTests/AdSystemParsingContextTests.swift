@@ -8,6 +8,10 @@ private let adSystemNoVersion = """
 private let adSystemWithVersion = """
 <AdSystem version="1.2.3">Amazing Ads</AdSystem>
 """
+private let adSystemDefaults = """
+<AdSystem>
+</AdSystem>
+"""
 
 extension AnyParser: AdSystemParsingContextDelegate {
     func adSystemParsingContext(
@@ -31,5 +35,17 @@ class AdSystemParsingContextTests: XCTestCase {
     func test_parse_adSystemWithVersion() throws {
         let params = try AnyParser<VAST.Element.AdSystem>().parse(adSystemWithVersion)
         XCTAssertEqual(params, VAST.Element.AdSystem(content: "Amazing Ads", version: "1.2.3"))
+    }
+
+    func test_parse_adSystemDefaults() throws {
+        let expectedContent = "DEFAULT_SYSTEM"
+        let behaviour = VAST.Parsing.Behaviour(
+            defaults: VAST.Parsing.DefaultConstants(string: expectedContent),
+            strictness: .loose
+        )
+        try XCTAssertEqual(
+            AnyParser(behaviour: behaviour).parse(adSystemDefaults),
+            VAST.Element.AdSystem(content: expectedContent, version: nil)
+        )
     }
 }

@@ -145,6 +145,16 @@ extension VAST.Parsing {
             unlink(parser)
         }
 
+        func getStringFromFoundCharacters(_ string: String, existingContent content: String?) -> String? {
+            let newContent = (content ?? "") + string.trimmingCharacters(in: .whitespacesAndNewlines)
+            return newContent.isEmpty ? nil : newContent
+        }
+
+        func getStringFromFoundCDATA(_ CDATA: Data, existingContent content: String?) -> String? {
+            guard let stringData = String(data: CDATA, encoding: .utf8) else { return nil }
+            return getStringFromFoundCharacters(stringData, existingContent: content)
+        }
+
         private func unlink(_ parser: XMLParser) {
             parser.delegate = parentContext
             delegate = nil

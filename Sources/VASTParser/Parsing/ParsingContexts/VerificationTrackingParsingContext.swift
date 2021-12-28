@@ -47,9 +47,10 @@ public extension VAST.Parsing.Verification {
             }
             localDelegate?.trackingParsingContext(
                 self,
-                didParse: VAST.Element.Verification.Tracking(
-                    url: content ?? behaviour.defaults.url,
-                    event: VAST.Element.Verification.Tracking.Event(rawValue: event ?? behaviour.defaults.string)
+                didParse: VAST.Element.Verification.Tracking.make(
+                    withDefaults: behaviour.defaults,
+                    url: content,
+                    event: event
                 )
             )
         }
@@ -57,5 +58,29 @@ public extension VAST.Parsing.Verification {
         public func parser(_ parser: XMLParser, foundCharacters string: String) {
             content = URL(string: string.trimmingCharacters(in: .whitespacesAndNewlines))
         }
+    }
+}
+
+extension VAST.Element.Verification.Tracking {
+    static func make(
+        withDefaults defaults: VAST.Parsing.DefaultConstants,
+        url: URL? = nil,
+        event: String? = nil
+    ) -> VAST.Element.Verification.Tracking {
+        VAST.Element.Verification.Tracking(
+            url: url ?? defaults.url,
+            event: VAST.Element.Verification.Tracking.Event(rawValue: event ?? defaults.string)
+        )
+    }
+
+    static func make(
+        withDefaults defaults: VAST.Parsing.DefaultConstants,
+        url: URL? = nil,
+        event: VAST.Element.Verification.Tracking.Event?
+    ) -> VAST.Element.Verification.Tracking {
+        VAST.Element.Verification.Tracking(
+            url: url ?? defaults.url,
+            event: event ?? VAST.Element.Verification.Tracking.Event(rawValue: defaults.string)
+        )
     }
 }

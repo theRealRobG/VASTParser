@@ -13,6 +13,10 @@ private let exampleXMLEncodedAttributeTrue = """
     <Key>value</Key>
 </AdParameters>
 """
+private let exampleDefaults = """
+<AdParameters>
+</AdParameters>
+"""
 
 extension AnyParser: AdParametersParsingContextDelegate {
     func adParametersParsingContext(
@@ -41,5 +45,17 @@ class AdParametersParsingContextTests: XCTestCase {
     func test_parse_exampleXMLEncodedAttributeTrue() throws {
         let params = try AnyParser<VAST.Element.AdParameters>().parse(exampleXMLEncodedAttributeTrue)
         XCTAssertEqual(params, VAST.Element.AdParameters(content: "<Key>value</Key>", xmlEncoded: true))
+    }
+
+    func test_parse_exampleDefaults() throws {
+        let expectedContentString = "DEFAULT_PARAM"
+        let behaviour = VAST.Parsing.Behaviour(
+            defaults: VAST.Parsing.DefaultConstants(string: expectedContentString),
+            strictness: .loose
+        )
+        try XCTAssertEqual(
+            AnyParser(behaviour: behaviour).parse(exampleDefaults),
+            VAST.Element.AdParameters(content: expectedContentString, xmlEncoded: nil)
+        )
     }
 }

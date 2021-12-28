@@ -62,7 +62,7 @@ public extension VAST.Parsing {
 
         @objc
         public func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
-            content = String(data: CDATABlock, encoding: .utf8)
+            content = getStringFromFoundCDATA(CDATABlock, existingContent: content)
         }
     }
 }

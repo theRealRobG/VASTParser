@@ -53,11 +53,7 @@ public extension VAST.Parsing {
 
         @objc
         public func parser(_ parser: XMLParser, foundCharacters string: String) {
-            if let content = self.content {
-                self.content = content + string.trimmingCharacters(in: .whitespacesAndNewlines)
-            } else {
-                self.content = string.trimmingCharacters(in: .whitespacesAndNewlines)
-            }
+            content = getStringFromFoundCharacters(string, existingContent: content)
         }
     }
 }

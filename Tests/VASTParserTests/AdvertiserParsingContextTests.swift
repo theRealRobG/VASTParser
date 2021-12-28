@@ -11,6 +11,10 @@ private let advertiserWithIdExample = """
 private let advertiserDefaultExample = """
 <Advertiser/>
 """
+private let advertiserDefaultWithWhitespaceExample = """
+<Advertiser>
+</Advertiser>
+"""
 
 extension AnyParser: AdvertiserParsingContextDelegate {
     func advertiserParsingContext(
@@ -59,6 +63,18 @@ class AdvertiserPasrsingContextTests: XCTestCase {
                 id: nil,
                 content: expectedString
             )
+        )
+    }
+
+    func test_advertiserDefaultWithWhitespaceExample() {
+        let expectedString = "TEST_ADVERTISER"
+        let behaviour = VAST.Parsing.Behaviour(
+            defaults: VAST.Parsing.DefaultConstants(string: expectedString),
+            strictness: .loose
+        )
+        try XCTAssertEqual(
+            AnyParser(behaviour: behaviour).parse(advertiserDefaultWithWhitespaceExample),
+            VAST.Element.Advertiser(id: nil, content: expectedString)
         )
     }
 }

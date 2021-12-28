@@ -23,6 +23,16 @@ private let trackingEventsDefaultValuesExample = """
 </TrackingEvents>
 """
 
+private let trackingEventsDefaultValuesWithWhitespaceExample = """
+<TrackingEvents>
+    <Tracking>
+
+    </Tracking>
+    <Tracking>
+    </Tracking>
+</TrackingEvents>
+"""
+
 extension AnyParser: VerificationTrackingEventsParsingContextDelegate {
     func trackingEventsParsingContext(
         _ parsingContext: VAST.Parsing.Verification.TrackingEventsParsingContext,
@@ -80,6 +90,30 @@ class VerificationTrackingEventsParsingContextTests: XCTestCase {
                     strictness: .loose
                 )
             ).parse(trackingEventsDefaultValuesExample),
+            [
+                VAST.Element.Verification.Tracking(
+                    url: URL(string: "https://test.com/test")!,
+                    event: .unknown("TEST_STRING")
+                ),
+                VAST.Element.Verification.Tracking(
+                    url: URL(string: "https://test.com/test")!,
+                    event: .unknown("TEST_STRING")
+                )
+            ]
+        )
+    }
+
+    func test_trackingEventsDefaultValuesWithWhitespaceExample() {
+        try XCTAssertEqual(
+            AnyParser(
+                behaviour: VAST.Parsing.Behaviour(
+                    defaults: VAST.Parsing.DefaultConstants(
+                        string: "TEST_STRING",
+                        url: URL(string: "https://test.com/test")!
+                    ),
+                    strictness: .loose
+                )
+            ).parse(trackingEventsDefaultValuesWithWhitespaceExample),
             [
                 VAST.Element.Verification.Tracking(
                     url: URL(string: "https://test.com/test")!,
