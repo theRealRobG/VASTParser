@@ -51,6 +51,35 @@ public extension VAST.Parsing {
             attributes attributeDict: [String : String] = [:]
         ) {
             switch elementName {
+            // MARK: - Simple content elements
+            case .vastElementName.adServingId,
+                    .vastElementName.adTitle,
+                    .vastElementName.altText,
+                    .vastElementName.companionClickThrough,
+                    .vastElementName.description,
+                    .vastElementName.duration,
+                    .vastElementName.error,
+                    .vastElementName.expires,
+                    .vastElementName.htmlResource,
+                    .vastElementName.iconClickThrough,
+                    .vastElementName.iconViewTracking,
+                    .vastElementName.iFrameResource,
+                    .vastElementName.nonLinearClickThrough,
+                    .vastElementName.notViewable,
+                    .vastElementName.vastAdTagURI,
+                    .vastElementName.verificationParameters,
+                    .vastElementName.viewable,
+                    .vastElementName.viewUndetermined:
+                currentParsingContext = VAST.Parsing.UnknownElementParsingContext(
+                    xmlParser: parser,
+                    elementName: elementName,
+                    attributes: [:],
+                    errorLog: errorLog,
+                    behaviour: behaviour,
+                    delegate: self,
+                    parentContext: self
+                )
+            // MARK: - Complex elements (including attributes and/or children)
             case .vastElementName.adParameters:
                 currentParsingContext = VAST.Parsing.AdParametersParsingContext(
                     xmlParser: parser,
@@ -137,15 +166,6 @@ public extension VAST.Parsing {
                 currentParsingContext = VAST.Parsing.VerificationParsingContext(
                     xmlParser: parser,
                     attributes: attributeDict,
-                    errorLog: errorLog,
-                    behaviour: behaviour,
-                    delegate: self,
-                    parentContext: self
-                )
-            case .vastElementName.verificationParameters:
-                currentParsingContext = VAST.Parsing.CDATAContentParsingContext(
-                    xmlParser: parser,
-                    elementName: elementName,
                     errorLog: errorLog,
                     behaviour: behaviour,
                     delegate: self,

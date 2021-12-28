@@ -24,7 +24,7 @@ public extension VAST.Parsing {
         private var currentJavaScriptResourceParsingContext: JavaScriptResourceParsingContext?
         private var currentExecutableResourceParsingContext: ExecutableResourceParsingContext?
         private var currentTrackingEventsParsingContext: Verification.TrackingEventsParsingContext?
-        private var currentCDATAParsingContext: CDATAContentParsingContext?
+        private var currentUnknownElementParsingContext: UnknownElementParsingContext?
 
         public init(
             xmlParser: XMLParser,
@@ -105,9 +105,10 @@ public extension VAST.Parsing {
                     parentContext: self
                 )
             case .vastElementName.verificationParameters:
-                currentCDATAParsingContext = CDATAContentParsingContext(
+                currentUnknownElementParsingContext = UnknownElementParsingContext(
                     xmlParser: parser,
                     elementName: .vastElementName.verificationParameters,
+                    attributes: [:],
                     errorLog: errorLog,
                     behaviour: behaviour,
                     delegate: self,
@@ -153,15 +154,14 @@ extension VAST.Parsing.VerificationParsingContext: VerificationTrackingEventsPar
     }
 }
 
-extension VAST.Parsing.VerificationParsingContext: CDATAContentParsingContextDelegate {
-    public func cdataContentParsingContext(
-        _ parsingContext: VAST.Parsing.CDATAContentParsingContext,
-        didParse content: Data,
-        fromElementName elementName: String
+extension VAST.Parsing.VerificationParsingContext: UnknownElementParsingContextDelegate {
+    public func unknownElementParsingContext(
+        _ parsingContext: VAST.Parsing.UnknownElementParsingContext,
+        didParse parsedContent: VAST.Parsing.UnknownElement
     ) {
-        guard currentCDATAParsingContext === parsingContext else { return }
-        verificationParameters = String(data: content, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        currentCDATAParsingContext = nil
+        guard currentUnknownElementParsingContext === parsingContext else { return }
+        verificationParameters = parsedContent.stringContent
+        currentUnknownElementParsingContext = nil
     }
 }
 

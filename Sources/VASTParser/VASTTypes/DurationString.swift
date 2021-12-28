@@ -1,6 +1,6 @@
 import Foundation
 
-public struct DurationString: ExpressibleByStringLiteral, CustomStringConvertible {
+public struct DurationString: ExpressibleByStringLiteral, CustomStringConvertible, Equatable {
     public var description: String
     public var seconds: Double? {
         let components = description.split(separator: ":")
