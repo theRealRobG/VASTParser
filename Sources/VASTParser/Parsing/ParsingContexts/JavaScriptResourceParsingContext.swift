@@ -9,7 +9,6 @@ public protocol JavaScriptResourceParsingContextDelegate: AnyObject {
 
 public extension VAST.Parsing {
     class JavaScriptResourceParsingContext: AnyParsingContext {
-        private var content: URL?
         private var localDelegate: JavaScriptResourceParsingContextDelegate? {
             super.delegate as? JavaScriptResourceParsingContextDelegate
         }
@@ -38,6 +37,7 @@ public extension VAST.Parsing {
             missingConstant: (String) throws -> Void,
             missingElement: (String) throws -> Void
         ) throws {
+            let content = unknownElement.stringContent.flatMap { URL(string: $0) }
             if content == nil {
                 try missingConstant("content")
             }
@@ -58,11 +58,6 @@ public extension VAST.Parsing {
                     browserOptional: browserOptional == "true"
                 )
             )
-        }
-
-        @objc
-        public func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
-            content = String(data: CDATABlock, encoding: .utf8).flatMap { URL(string: $0) }
         }
     }
 }

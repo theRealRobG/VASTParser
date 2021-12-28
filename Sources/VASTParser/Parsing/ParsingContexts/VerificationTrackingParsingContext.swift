@@ -9,7 +9,6 @@ public protocol VerificationTrackingParsingContextDelegate: AnyObject {
 
 public extension VAST.Parsing.Verification {
     class TrackingParsingContext: VAST.Parsing.AnyParsingContext {
-        private var content: URL?
         private var localDelegate: VerificationTrackingParsingContextDelegate? {
             super.delegate as? VerificationTrackingParsingContextDelegate
         }
@@ -42,6 +41,7 @@ public extension VAST.Parsing.Verification {
             if event == nil {
                 try missingConstant("event")
             }
+            let content = unknownElement.stringContent.flatMap { URL(string: $0) }
             if content == nil {
                 try missingConstant("url")
             }
@@ -53,10 +53,6 @@ public extension VAST.Parsing.Verification {
                     event: event
                 )
             )
-        }
-
-        public func parser(_ parser: XMLParser, foundCharacters string: String) {
-            content = URL(string: string.trimmingCharacters(in: .whitespacesAndNewlines))
         }
     }
 }

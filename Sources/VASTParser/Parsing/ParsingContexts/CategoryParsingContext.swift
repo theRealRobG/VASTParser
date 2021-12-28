@@ -9,7 +9,6 @@ public protocol CategoryParsingContextDelegate: AnyObject {
 
 public extension VAST.Parsing {
     class CategoryParsingContext: AnyParsingContext {
-        private var content: String?
         private var localDelegate: CategoryParsingContextDelegate? {
             super.delegate as? CategoryParsingContextDelegate
         }
@@ -38,6 +37,7 @@ public extension VAST.Parsing {
             missingConstant: (String) throws -> Void,
             missingElement: (String) throws -> Void
         ) throws {
+            let content = unknownElement.stringContent
             if content == nil {
                 try missingConstant("content")
             }
@@ -49,10 +49,6 @@ public extension VAST.Parsing {
                     content: content
                 )
             )
-        }
-
-        public func parser(_ parser: XMLParser, foundCharacters string: String) {
-            content = getStringFromFoundCharacters(string, existingContent: content)
         }
     }
 }

@@ -8,47 +8,6 @@ public protocol UnknownElementParsingContextDelegate: AnyObject {
 }
 
 public extension VAST.Parsing {
-    class UnknownElement: CustomStringConvertible {
-        public let name: String
-        public var content: [UnknownElementContent] = []
-        public var attributes: [String: String] = [:]
-
-        public init(name: String, attributes: [String: String] = [:]) {
-            self.name = name
-            self.attributes = attributes
-        }
-
-        public var description: String {
-            var xmlString = "<\(name)"
-            xmlString += attributes.isEmpty ? "" : " "
-            xmlString += attributes
-                .map { key, value in
-                    return "\(key)=\"\(value)\""
-                }
-                .joined(separator: " ")
-            xmlString += ">"
-            for element in content {
-                switch element {
-                case .element(let unknownElement):
-                    xmlString += unknownElement.description
-                case .string(let string):
-                    xmlString += string.trimmingCharacters(in: .whitespacesAndNewlines)
-                case .data(let data):
-                    guard let string = String(data: data, encoding: .utf8) else { continue }
-                    xmlString += string.trimmingCharacters(in: .whitespacesAndNewlines)
-                }
-            }
-            xmlString += "</\(name)>"
-            return xmlString
-        }
-    }
-
-    enum UnknownElementContent {
-        case element(UnknownElement)
-        case string(String)
-        case data(Data)
-    }
-
     class UnknownElementParsingContext: AnyParsingContext, UnknownElementParsingContextDelegate {
         private var element: UnknownElement
         private var localDelegate: UnknownElementParsingContextDelegate? {
@@ -114,12 +73,12 @@ public extension VAST.Parsing {
         }
 
         @objc
-        public func parser(_ parser: XMLParser, foundCharacters string: String) {
+        public override func parser(_ parser: XMLParser, foundCharacters string: String) {
             element.content.append(.string(string))
         }
 
         @objc
-        public func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
+        public override func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
             element.content.append(.data(CDATABlock))
         }
     }

@@ -9,7 +9,6 @@ public protocol ExecutableResourceParsingContextDelegate: AnyObject {
 
 public extension VAST.Parsing {
     class ExecutableResourceParsingContext: AnyParsingContext {
-        private var content: String?
         private var localDelegate: ExecutableResourceParsingContextDelegate? {
             super.delegate as? ExecutableResourceParsingContextDelegate
         }
@@ -38,6 +37,7 @@ public extension VAST.Parsing {
             missingConstant: (String) throws -> Void,
             missingElement: (String) throws -> Void
         ) throws {
+            let content = unknownElement.stringContent
             if content == nil {
                 try missingConstant("content")
             }
@@ -58,11 +58,6 @@ public extension VAST.Parsing {
                     type: type
                 )
             )
-        }
-
-        @objc
-        public func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
-            content = getStringFromFoundCDATA(CDATABlock, existingContent: content)
         }
     }
 }

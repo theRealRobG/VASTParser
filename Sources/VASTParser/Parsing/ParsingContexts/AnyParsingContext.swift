@@ -2,6 +2,7 @@ import Foundation
 
 extension VAST.Parsing {
     open class AnyParsingContext: NSObject, XMLParserDelegate {
+        public var unknownElement: UnknownElement
         public let elementName: String
         public let attributes: [String: String]
         public let expectedElementNames: Set<String>
@@ -41,6 +42,7 @@ extension VAST.Parsing {
             self.behaviour = behaviour
             self.delegate = delegate
             self.parentContext = parentContext
+            self.unknownElement = UnknownElement(name: elementName, attributes: attributes)
             super.init()
             xmlParser.delegate = self
         }
@@ -143,6 +145,14 @@ extension VAST.Parsing {
                 )
             } catch {}
             unlink(parser)
+        }
+
+        public func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
+            unknownElement.content.append(.data(CDATABlock))
+        }
+
+        public func parser(_ parser: XMLParser, foundCharacters string: String) {
+            unknownElement.content.append(.string(string))
         }
 
         func getStringFromFoundCharacters(_ string: String, existingContent content: String?) -> String? {

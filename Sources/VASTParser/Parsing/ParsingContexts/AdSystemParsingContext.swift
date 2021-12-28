@@ -9,7 +9,6 @@ public protocol AdSystemParsingContextDelegate: AnyObject {
 
 public extension VAST.Parsing {
     class AdSystemParsingContext: AnyParsingContext {
-        private var content: String?
         private var localDelegate: AdSystemParsingContextDelegate? {
             super.delegate as? AdSystemParsingContextDelegate
         }
@@ -38,6 +37,7 @@ public extension VAST.Parsing {
             missingConstant: (String) throws -> Void,
             missingElement: (String) throws -> Void
         ) throws {
+            let content = unknownElement.stringContent
             if content == nil {
                 try missingConstant("content")
             }
@@ -49,11 +49,6 @@ public extension VAST.Parsing {
                     version: attributes["version"]
                 )
             )
-        }
-
-        @objc
-        public func parser(_ parser: XMLParser, foundCharacters string: String) {
-            content = getStringFromFoundCharacters(string, existingContent: content)
         }
     }
 }

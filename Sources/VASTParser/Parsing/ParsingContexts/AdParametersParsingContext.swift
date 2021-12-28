@@ -9,7 +9,6 @@ public protocol AdParametersParsingContextDelegate: AnyObject {
 
 public extension VAST.Parsing {
     class AdParametersParsingContext: AnyParsingContext, UnknownElementParsingContextDelegate {
-        private var content: String?
         private var localDelegate: AdParametersParsingContextDelegate? {
             super.delegate as? AdParametersParsingContextDelegate
         }
@@ -55,6 +54,7 @@ public extension VAST.Parsing {
             missingConstant: (String) throws -> Void,
             missingElement: (String) throws -> Void
         ) throws {
+            let content = unknownElementDescription()
             if content == nil {
                 try missingConstant("content")
             }
@@ -73,17 +73,30 @@ public extension VAST.Parsing {
             didParse parsedContent: VAST.Parsing.UnknownElement
         ) {
             guard parsingContext === currentUnknownElementParsingContext else { return }
-            if let content = self.content {
-                self.content = content + parsedContent.description
-            } else {
-                self.content = parsedContent.description
-            }
+            unknownElement.content.append(.element(parsedContent))
             currentUnknownElementParsingContext = nil
         }
 
-        @objc
-        public func parser(_ parser: XMLParser, foundCharacters string: String) {
-            content = getStringFromFoundCharacters(string, existingContent: content)
+        private func unknownElementDescription() -> String? {
+            let stringContent = unknownElement.content
+                .reduce("") { existingContent, nextContentElement in
+                    switch nextContentElement {
+                    case .data(let data):
+                        guard let string = String(data: data, encoding: .utf8) else { return existingContent }
+                        return existingContent + string
+                    case .element(let element):
+                        return existingContent + element.description
+                    case .string(let string):
+                        return existingContent + string
+                    }
+                }
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if stringContent.isEmpty {
+                return nil
+            } else {
+                return stringContent
+            }
         }
     }
 }

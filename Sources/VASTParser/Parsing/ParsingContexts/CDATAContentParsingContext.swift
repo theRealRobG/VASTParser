@@ -50,7 +50,7 @@ public extension VAST.Parsing {
         }
 
         @objc
-        public func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
+        public override func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
             content = CDATABlock
         }
     }

@@ -50,7 +50,7 @@ public extension VAST.Parsing {
         }
 
         @objc
-        public func parser(_ parser: XMLParser, foundCharacters string: String) {
+        public override func parser(_ parser: XMLParser, foundCharacters string: String) {
             content = getStringFromFoundCharacters(string, existingContent: content)
         }
     }
